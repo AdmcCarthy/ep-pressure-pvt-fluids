@@ -1,4 +1,4 @@
-# Symbols for casing-shoe pressure tests, the same in every figure (src/utils/shoe_tests.py).  The Sodir casing table gives the test type as LOT, FIT, XLOT (and XLO) or nothing.
+# Symbols for casing-shoe pressure tests, the same in every figure.  The Sodir casing table gives the test type as LOT, FIT, XLOT (and XLO) or nothing.
 # A symbol is a SHAPE (colour stays the project orange for a test, so the shape carries the type); `meaning` says what each test can and cannot say about the rock.
 types:
   LOT:

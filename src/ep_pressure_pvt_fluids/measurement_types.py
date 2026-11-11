@@ -1,9 +1,9 @@
-"""Measurement types of the PVT tests: which kind of measurement a data point comes from, classified from the official Sodir records only (docs/measurement_types.md).
+"""Measurement types of the PVT tests: which kind of measurement a data point comes from, classified from the official Sodir records only.
 
 A DST of `well_dst` is linked to the oil-sample records (`well_oil_sample`, one per sample taken in a test, with the test type DST / MDT / RFT / PROD ...) of its wellbore: the same
 test number is strong evidence (high confidence), an overlapping interval weaker (medium), no record is `dst_unsampled` (medium: absence of a record is not proof of no sample).
 A stated saturation pressure of a PVT report makes the point a laboratory type (`pvt_report`).  Nothing is guessed: without evidence the type stays `dst` or `other`.
-Pure functions (no I/O) returning frames and events (AGENTS.md section 14).
+Pure functions (no I/O) returning frames and events.
 """
 
 from __future__ import annotations

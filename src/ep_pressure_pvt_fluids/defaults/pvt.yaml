@@ -1,4 +1,4 @@
-# PVT fluid classification from drill stem tests (src/processing/pvt.py, docs/pvt.md).
+# PVT fluid classification from drill stem tests.
 # Everything here is configuration so it can be edited and re-run.  Values marked ASSUMPTION are screening choices from the open literature
 # (McCain, Glaso / Standing, Wilhelms/Larter), NOT calibrated to a PVT report of a field: they classify tests, they do not replace a PVT study.
 # GOR and GLR are in Sm3/Sm3 (1 Sm3/Sm3 = 5.6146 scf/stb).  Pressure in bar, temperature in degC.
@@ -24,7 +24,7 @@ fluid_class_by_gor_sm3_sm3:
 liquid_below_gor_sm3_sm3: 570.0            # a test with GOR below this is treated as a liquid-phase (oil) system for the saturation state, above it as a gas system
 
 # Reference fluid: the fluid of the plotted U, and the one used when a test has no oil density / temperature / gas density (`envelope_basis = reference`, then only
-# indicative).  Set by Adam on 2026-11-03 to 40 API, 55 degC and gas gravity 1.00.  Against the reference GLR-pressure chart (see `calibration` below) the bubble-point
+# indicative).  Set by the maintainer on 2026-11-03 to 40 API, 55 degC and gas gravity 1.00.  Against the reference GLR-pressure chart (see `calibration` below) the bubble-point
 # branch is 11-16 % low in pressure over the mid-range of the left branch (GLR 110-316) and 17 % high at the critical end with Glaso (the default; the U closes at 415 bar,
 # chart: 387 bar); with Standing it was 27-31 % low in the mid-range and closed the U at 378 bar.  The earlier fit (44 API, 90 degC, 0.91, Standing) was about 20-24 % low
 # there and closed the U at 416 bar.  Neither correlation follows the chart's flattening towards the critical point exactly.
@@ -63,7 +63,7 @@ calibration:
 # Uncertainty of a test's producing GOR (= the GLR axis), a LITERATURE value (Moffatt & Williams 1998, SPE 49067, Table 4 p. 16: separator GOR typically +-5 %,
 # estimated worst case +-25 %; operator / laboratory experience, not measurements on reference fluids).  Used to ask how big a GLR error would put a forbidden-domain
 # test on the envelope (`forbidden_glr_factor`, `forbidden_resolution`); the envelope's own width (`saturation` below) is separate and is NOT added in.
-# knowledge_entry = the entry in knowledge/pvt.yaml that holds the citation (docs/knowledge.md).
+# knowledge_entry = the entry in knowledge/pvt.yaml that holds the citation.
 gor_uncertainty:
   typical: 0.05
   worst_case: 0.25
@@ -89,11 +89,11 @@ standing:
   api_coeff: 0.0125
   temp_coeff: 0.00091
 
-# The bubble-point (left) branch of the envelope: `glaso` (North Sea oils, below: the DEFAULT, Adam 2026-11-03) or `standing` (Californian oils, the earlier default).  Changing it changes the
-# envelope, so the zones, the states and the forbidden counts of well_dst_pvt, the dashboards and notebook 13 all follow (rebuild with scripts/build_all.py).  Against the
+# The bubble-point (left) branch of the envelope: `glaso` (North Sea oils, below: the DEFAULT, the maintainer 2026-11-03) or `standing` (Californian oils, the earlier default).  Changing it changes the
+# envelope, so the zones, the states and the forbidden counts of well_dst_pvt, the dashboards and the analysis notebooks all follow (rebuild with scripts/build_all.py).  Against the
 # digitised reference chart (40 API, 55 degC, gg 1.00) Glaso is closer (mean |deviation| 11.6 % against 19.4 % for Standing; docs/pvt.md section 8).
 left_branch:
-  correlation: glaso                       # Adam, 2026-11-03: Glaso is the default (North Sea oils); `standing` remains available
+  correlation: glaso                       # the maintainer, 2026-11-03: Glaso is the default (North Sea oils); `standing` remains available
 
 # Glaso (1980) "Generalized Pressure-Volume-Temperature Correlations", JPT 32 (5) 785-795 (SPE 8016-PA), Eq. 6: North Sea oils (wells from 56 N to the early 60s N), flash-separator GOR, total surface-gas
 # gravity; valid 150 to 7,000 psig, standard deviation 6.98 % (3.84 % for 2,000 to 7,000 psig; Table 11).  Pb* = (R / gg)^0.816 T^0.172 / API^0.989 (R scf/STB, T degF),
@@ -117,6 +117,6 @@ biodegradation:
     - {name: degradable,   below: 60.0}
     - {name: transition,   below: 80.0}
     - {name: pasteurised,  below: 1000.0}
-  heavy_api_below: 25.0                    # ASSUMPTION: as in notebook 13; clearly degraded oils are < 20 API, mixed by charge and maturity up to ~25
+  heavy_api_below: 25.0                    # ASSUMPTION: as in the analysis notebooks; clearly degraded oils are < 20 API, mixed by charge and maturity up to ~25
   light_api_above: 30.0
   uplift_areas: [BARENTS SEA]              # same areas as pressure.yaml `underpressure.areas`: uplift and erosion, so the maximum past temperature was higher than today

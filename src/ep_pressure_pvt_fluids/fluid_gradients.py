@@ -1,6 +1,6 @@
 """In-situ pressure gradients of gas, oil and formation water (density x g), from the fluid and not from the area.  Pure functions.
 
-Why (Adam, 2026-11-04): the gradient of a hydrocarbon leg is the in-situ density of its fluid, which is set by PVT (the stock-tank density, the gas-oil ratio, the gas gravity, the formation
+Why (decision of 2026-11-04): the gradient of a hydrocarbon leg is the in-situ density of its fluid, which is set by PVT (the stock-tank density, the gas-oil ratio, the gas gravity, the formation
 volume factor, pressure and temperature) and through them by the source rock and the maturity that made the fluid (marine type II kerogen gives oil, coal-rich type III gives gas and
 condensate), not by the geographic area.  So the gradient follows the PVT fluid class of the test (`well_dst_pvt.fluid_class`: black oil, volatile oil, gas condensate, wet gas, dry gas) and
 its measured API, GLR and gas gravity where they exist.

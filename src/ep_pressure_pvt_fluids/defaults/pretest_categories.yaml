@@ -1,8 +1,8 @@
-# Pretest signals (docs/borehole.md section 14, src/processing/formation_pressure.py).
-# DESIGN (Adam, 2026-11-06): three SUBJECTIVE signals are kept apart and NEVER collapsed into one ranking by a rule of thumb. A low mobility describes how DIFFICULT the measurement is, not how good the test is: a test at low
-# mobility can be a good test (a long build-up that stabilised, a modern tester that gives precise values in tight rock), and a high-mobility test can be bad. Absolute rulings are still to be defined (Adam); until then each test
+# Pretest signals.
+# DESIGN (decision of 2026-11-06): three SUBJECTIVE signals are kept apart and NEVER collapsed into one ranking by a rule of thumb. A low mobility describes how DIFFICULT the measurement is, not how good the test is: a test at low
+# mobility can be a good test (a long build-up that stabilised, a modern tester that gives precise values in tight rock), and a high-mobility test can be bad. Absolute rulings are still to be defined (the maintainer); until then each test
 # shows its signals, a traceable COMBINATION with a description (`combination_notes`, provisional) and only HARD EXCLUSIONS change a verdict.
-# Mobility limits CONFIRMED by Adam 2026-11-06 (0.1 and 1 mD/cP); they remain labelled assumptions until a reviewed source states them (requests req.094-096). Mobility is mD/cP.
+# Mobility limits CONFIRMED by the maintainer 2026-11-06 (0.1 and 1 mD/cP); they remain labelled assumptions until a reviewed source states them (requests req.094-096). Mobility is mD/cP.
 mobility_categories:                  # evaluated top-down on the mobility; `condition` = how demanding the measurement is, not how good the result is
   - {id: very_good,   label: "very good mobility (above 100)",  min: 100.0, condition: easy,           marker: "o", reason: "fast build-up expected: the pressure reaches the formation pressure in minutes"}
   - {id: good,        label: "good mobility (1 to 100)",        min: 1.0,   condition: moderate,       marker: "o", reason: "slower build-up expected; a stabilised value is likely"}
@@ -48,4 +48,4 @@ colours:                              # colour = the ENGINEER's assessment (what
   none_stated: "#0B6FA4"              # no remark in the file
   excluded: "#6B7782"                 # hard exclusion (lost seal, tight, dry)
 
-manual_tests: {}                    # manual enrichment, key '<well_folder>|<test_no>': {tester_generation: '<text>', source: '<document>'}; a stated generation replaces 'not stated' in the limitations (docs/borehole.md section 15)
+manual_tests: {}                    # manual enrichment, key '<well_folder>|<test_no>': {tester_generation: '<text>', source: '<document>'}; a stated generation replaces 'not stated' in the limitations

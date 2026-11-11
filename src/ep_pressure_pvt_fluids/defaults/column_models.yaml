@@ -1,4 +1,4 @@
-# Compositional grading of a hydrocarbon column with equations of state (src/processing/eos_mixture.py, src/processing/column_grading.py, docs/column_models.md, notebook 23).
+# Compositional grading of a hydrocarbon column with equations of state.
 # The traditional column is a LINEAR gradient from the apex to the free water level (density at the apex x g).  A real column changes composition, and so density and saturation pressure, with
 # depth: gravity pulls the heavy components down (isothermal gravity-chemical equilibrium), a temperature gradient and thermal diffusion work against it, convection reduces it.  Fluids that are
 # near critical grade strongly, black oils and lean gases hardly.  Everything here is configuration; nothing is a field composition (those come with the PVT reports).

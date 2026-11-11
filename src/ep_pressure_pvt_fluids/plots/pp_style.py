@@ -38,7 +38,7 @@ def legend_handles(keys: list[str]) -> list[Line2D]:
 
 
 def fracture_curves(obg_bar, pp_bar, nu_band) -> dict[str, Any]:
-    """Pressure [bar] of the Sh and FG family for the Poisson band (low, central, high), from the Zhang bounds (src/processing/pore_pressure.py)."""
+    """Pressure [bar] of the Sh and FG family for the Poisson band (low, central, high), from the Zhang bounds."""
     import numpy as np
 
     from ep_pressure_pvt_fluids import pore_pressure as pp

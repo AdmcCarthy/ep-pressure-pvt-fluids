@@ -1,4 +1,4 @@
-# Style guide for pore pressure figures (src/utils/pp_style.py).  Adam, 2026-11-05: use these for every pore pressure figure from now on.
+# Style guide for pore pressure figures.  the maintainer, 2026-11-05: use these for every pore pressure figure from now on.
 # Amended 2026-11-05: FG is DARK blue; HYDROSTATIC is LIGHT blue.  "PP expected" (red) is used ONLY when a pore pressure has been predicted away from hydrostatic (a trend from logs, a basin
 # model); until then the reference is called and drawn as hydrostatic, never as the expected pore pressure.
 # One line style per quantity, the same in every figure, so a reader learns it once.  Colour = the quantity, dash = expected / minimum / maximum.

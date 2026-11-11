@@ -1,4 +1,4 @@
-"""Plots of formation pretests on the pressure-depth figures (notebooks 22 and 24): one marker per test, its shape and fill say how far the draw-down can be trusted (mobility category), its ring says a possible
+"""Plots of formation pretests on the pressure-depth figures: one marker per test, its shape and fill say how far the draw-down can be trusted (mobility category), its ring says a possible
 supercharge, the reference lines are the hydrostatic gradient and, where the report states it, the mud density at the test.  Categories, limits and colours come from `config/pretest_categories.yaml`
 (assumptions until a source states them).  Every test is a SINGLE-TEST estimate: nothing is averaged or joined into a curve.  Depth is TVD below sea level (stated or from the survey); a test without TVD is not drawn.
 """
@@ -82,7 +82,7 @@ def pretest_figure(pre: pd.DataFrame, well_name: str, rt_m: float, gw: float, cc
         hyd = {"bar": gw * zz, "sg": np.asarray(pu.emw_sg(gw * zz, zz, rt_m, "RT"), dtype=float), "overpressure": np.zeros_like(zz)}[what]
         ax.plot(hyd, zz, color="#7EC8F0", lw=2.0, label="hydrostatic (seawater gradient, assumed)")
         draw_pretests(ax, d, what, rt_m, gw, cc, show_numbers=False)
-        core = d                                                                             # no measured point is dropped from a figure (Adam, 2026-11-08), also those below the water gradient
+        core = d                                                                             # no measured point is dropped from a figure (decision of 2026-11-08), also those below the water gradient
         if len(core):
             x = np.append(quantity(core, what, rt_m, gw), hyd[[0, -1]])
             pad = max(0.06 * float(x.max() - x.min()), 0.5 if what != "sg" else 0.02)

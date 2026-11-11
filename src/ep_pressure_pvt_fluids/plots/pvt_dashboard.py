@@ -2,7 +2,7 @@
 
     (the engine's scripts/build_pvt_dashboard.py reads the mid-layer and calls build_html)
 
-Reads the mart `well_dst_pvt` (docs/pvt.md) with the well positions (canonical `well_header`), the area of each well (regional marts), the plays and the
+Reads the mart `well_dst_pvt` with the well positions (canonical `well_header`), the area of each well (regional marts), the plays and the
 outlines (country polygons, area outlines) and writes reports/dashboards/pvt_glr_pressure.html: one self-contained page (data embedded as JSON, Plotly
 bundled in reports/dashboards/assets/, nothing is fetched when the page is viewed), EDS light theme.
 
@@ -89,7 +89,7 @@ footer{{margin-top:20px;font-size:12px;color:#5B6B77;border-top:1px solid var(--
 """
 
 BODY = """
-<header>E&amp;P Geoscience Analytics &middot; Norwegian Continental Shelf &middot; data: Sodir open data (CC BY 4.0) &middot; PVT screening (docs/pvt.md)</header>
+<header>E&amp;P Geoscience Analytics &middot; Norwegian Continental Shelf &middot; data: Sodir open data (CC BY 4.0) &middot; PVT screening</header>
 <main>
 <h1>GLR against reservoir pressure: which DST fluids can be one phase?<span class="draft">DRAFT</span></h1>
 <p class="headline" id="headline"></p>
@@ -129,8 +129,8 @@ BODY = """
 <b>Forbidden domain</b> (grey, above the envelope): the pressure is below the saturation pressure of that GLR, so no single-phase fluid exists. <b>Diphasic bands</b> beneath it: the fluid is at its saturation pressure, within the uncertainty of the estimate, so a gas cap (oil) or an oil ring (gas) may be in equilibrium with it. <b>Monophasic domains</b> beneath those: undersaturated oil, critical fluid, undersaturated gas. A state taken from a <b>PVT report</b> (diamond) uses the stated bubble or dew point instead of the envelope.
 The <b>map</b> shows the wells of the selected areas and plays and zooms to them; <b>areas</b> are the five Sodir structural-province areas (Southern, Central and Northern North Sea, Norwegian Sea, Barents Sea), <b>plays</b> are placed by the depth of the test inside the play interval of that well (a proxy).</p>
 <h3>Sources</h3><p>Sodir drill stem tests (<code>well_dst</code>), pressure screening (<code>well_dst_pressure</code>, docs/pressure.md), PVT classification (<code>well_dst_pvt</code>, docs/pvt.md), well positions (<code>well_header</code>), Natural Earth country outlines. Glaso (1980) and Standing (1947) bubble-point correlations; McCain fluid classes; HSE HPHT thresholds; Wilhelms et al. (Nature, 2001) and Larter et al. for pasteurisation.</p></div>
-<div class="caveat"><h3>Caveats</h3><p>The envelopes are literature-based screening assumptions, not field PVT: the bubble-point correlation is good to about &plusmn;7 % (Glaso, on its own data) to &plusmn;15&ndash;20 % (Standing) in GOR, and the dew-point curve was digitised by eye from a photograph of the reference chart, and the reference fluid (40 API, 55 &deg;C, gas gravity 1.00) closes the U at about 378 bar against 387 bar on the chart with the left branch about 30 % low in the mid-range (config/pvt.yaml, DQ-086). Estimated temperatures (hollow markers) come from the seabed temperature and the geothermal gradient of the well (docs/temperature.md, DQ-089, DQ-090) and are less certain than gauge values; bottom-hole temperature corrections that need data we do not have (Horner, Waples, Hermanrud) wait for it.
-The critical band (500&ndash;1,200 Sm&sup3;/Sm&sup3;) is configured, not a law. A saturated reading is evidence for a gas cap or oil ring, not proof. The test GLR is a test average, not the initial solution GOR. Tests without oil density, gas density or temperature use the reference fluid (envelope basis). Test temperature is a minimum of the maximum past temperature; in the Barents Sea (uplift) pasteurisation may be under-classified (DQ-087). Forbidden-domain tests are flagged, never corrected. Plays are a depth-based proxy. Only tests with a bottom-hole reservoir pressure and a GLR above zero are shown; tests above the pressure axis limit are counted but not drawn.</p></div></div>
+<div class="caveat"><h3>Caveats</h3><p>The envelopes are literature-based screening assumptions, not field PVT: the bubble-point correlation is good to about &plusmn;7 % (Glaso, on its own data) to &plusmn;15&ndash;20 % (Standing) in GOR, and the dew-point curve was digitised by eye from a photograph of the reference chart, and the reference fluid (40 API, 55 &deg;C, gas gravity 1.00) closes the U at about 378 bar against 387 bar on the chart with the left branch about 30 % low in the mid-range (config/pvt.yaml, DQ-086). Estimated temperatures (hollow markers) come from the seabed temperature and the geothermal gradient of the well and are less certain than gauge values; bottom-hole temperature corrections that need data we do not have (Horner, Waples, Hermanrud) wait for it.
+The critical band (500&ndash;1,200 Sm&sup3;/Sm&sup3;) is configured, not a law. A saturated reading is evidence for a gas cap or oil ring, not proof. The test GLR is a test average, not the initial solution GOR. Tests without oil density, gas density or temperature use the reference fluid (envelope basis). Test temperature is a minimum of the maximum past temperature; in the Barents Sea (uplift) pasteurisation may be under-classified. Forbidden-domain tests are flagged, never corrected. Plays are a depth-based proxy. Only tests with a bottom-hole reservoir pressure and a GLR above zero are shown; tests above the pressure axis limit are counted but not drawn.</p></div></div>
 <footer>Generated by <code>python scripts/build_pvt_dashboard.py</code> from the mid-layer; all numbers are computed in the page from the embedded tests. Colours: EDS light theme. DRAFT: layout and filters are open for comment.</footer>
 </main>
 """
@@ -302,7 +302,7 @@ function pointTraces(S, key, palette, extra, hover, sizeOf) {
   });
   return out;
 }
-const HOVER = '<b>%{customdata[0]}</b> test %{customdata[1]}<br>%{customdata[19]:.0f} bar, %{customdata[3]:.0f} °C, GLR %{customdata[20]:,.0f}<extra></extra>';      // two lines next to the point; the rest is in the detail panel (src/utils/hover_panel.py)
+const HOVER = '<b>%{customdata[0]}</b> test %{customdata[1]}<br>%{customdata[19]:.0f} bar, %{customdata[3]:.0f} °C, GLR %{customdata[20]:,.0f}<extra></extra>';      // two lines next to the point; the rest is in the detail panel
 const NUM = (v, d) => (v === null || v === undefined || isNaN(v)) ? '–' : Number(v).toLocaleString('en-GB', {minimumFractionDigits: d || 0, maximumFractionDigits: d || 0});
 window.HP_DETAIL = (tr, p) => { const cd = p.customdata || (tr.customdata && tr.customdata[p.pointNumber]); if (!cd || cd.length < 21) return null;
   return `<b>${cd[0]}</b> test ${cd[1]}<br>${cd[13]}; ${cd[14]}<br>MD ${NUM(cd[2])} m RT, ${NUM(cd[19])} bar, ${NUM(cd[3])} °C${cd[16]}<br>GLR ${NUM(cd[20])} Sm³/Sm³ (${NUM(cd[10])} scf/stb)<br>API ${NUM(cd[4], 1)}, ${cd[5]}<br>state: ${cd[6]} (${cd[7]})<br>envelope basis: ${cd[8]}<br>Pb ${NUM(cd[11])} bar, Pdew ${NUM(cd[12])} bar<br>measurement type: ${cd[17]} (${cd[18]} confidence)<br>${cd[9]}`; };

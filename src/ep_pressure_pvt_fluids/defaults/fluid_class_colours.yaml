@@ -1,7 +1,7 @@
-# Fluid-class colours for charts that COMPARE fluid types (black oil, volatile oil, near-critical, gas condensate, wet gas, dry gas).  Adam, 2026-11-04: the Geostandard oil green and gas red are
+# Fluid-class colours for charts that COMPARE fluid types (black oil, volatile oil, near-critical, gas condensate, wet gas, dry gas).  the maintainer, 2026-11-04: the Geostandard oil green and gas red are
 # right for "oil" and "gas" but not for telling six fluid classes apart in one figure (every line was green or red).  This is a CONTINUUM that starts and ends on the Geostandard colours:
 # oils in greens (dark to lime), the transition amber, the condensates in brown and orange-red, dry gas on the Geostandard gas red.  Neighbours differ in hue AND lightness, and the HPHT variant
-# of a class is drawn with a dashed line (not a new colour).  Used by notebooks 22 and 23; `hc_colours.yaml` stays the colour of plain oil / gas / condensate everywhere else.
+# of a class is drawn with a dashed line (not a new colour).  Used by the analysis notebooks; `hc_colours.yaml` stays the colour of plain oil / gas / condensate everywhere else.
 classes:
   - {name: black oil,      colour: "#1B6E20", note: "dark green: the heavy, gas-poor end of the oils"}
   - {name: volatile oil,   colour: "#5E9410", note: "lime green: still oil, much more dissolved gas"}

@@ -1,4 +1,4 @@
-"""Figures of the permanent-gauge shut-in pressures (notebooks 22 and 24).  A shut-in value is the LAST daily average of a run of fully shut-in days: shape and fill say how far it can be read as a shut-in pressure
+"""Figures of the permanent-gauge shut-in pressures.  A shut-in value is the LAST daily average of a run of fully shut-in days: shape and fill say how far it can be read as a shut-in pressure
 (filled circle = flat at the end, open circle = still rising, a lower bound; grey cross = pressure falls during the shut-in, not a build-up).  Nothing is extrapolated.  Pressures at the gauge are measured; pressures at the datum are a
 BAND from an assumed fluid gradient (derived).  Wells are told apart by colour and named in the legend, with the count of episodes."""
 from __future__ import annotations

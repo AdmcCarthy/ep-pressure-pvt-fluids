@@ -1,4 +1,4 @@
-# Pressure, temperature and fracture-gradient screening (src/processing/pressure.py, docs/pressure.md).
+# Pressure, temperature and fracture-gradient screening.
 # Everything here is configuration so it can be edited and re-run.  Values marked ASSUMPTION are screening choices, not data.
 
 depth:
@@ -94,7 +94,7 @@ fwl:
   min_gradient_bar_per_m: {gas: 0.005, oil: 0.05}     # ASSUMPTION: plausible in-situ gradient bands (g/cm3 x 0.0981): gas 0.05-0.6, oil 0.5-0.97
   max_gradient_bar_per_m: {gas: 0.060, oil: 0.095}
 
-# In-situ gradients from the fluid (src/processing/fluid_gradients.py; docs/pressure.md section 10): density x g, set by PVT and hence by the source rock and maturity, not by the area.
+# In-situ gradients from the fluid: density x g, set by PVT and hence by the source rock and maturity, not by the area.
 fluid_gradients:
   gas:                                     # rho = p M / (Z R T),  M = gas gravity x 28.9647
     gravity_default: 0.70                  # ASSUMPTION: used where the test has no plausible DST gas gravity (the DST median is 0.715)
@@ -117,7 +117,7 @@ fluid_gradients:
       - [55000, 0.1018]
       - [88000, 0.1052]
 
-# Pressure-depth figures (notebook 22, src/utils/pressure_plots.py): the wells to draw.  An empty list = the wells with the most tests that have a contact below them.
+# Pressure-depth figures: the wells to draw.  An empty list = the wells with the most tests that have a contact below them.
 plots:
   wells: []                                # for example ["34/10-9", "34/10-30", "6507/7-3"]: well names as Sodir writes them
   max_auto_wells: 9

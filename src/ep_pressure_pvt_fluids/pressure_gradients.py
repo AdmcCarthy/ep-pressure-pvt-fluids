@@ -1,6 +1,6 @@
 """Pressure-depth gradients by fluid, the free water level where a hydrocarbon gradient meets the water gradient, and the column a seal can hold.  Pure functions.
 
-Why (Adam, 2026-11-04): pressures measured in a hydrocarbon leg follow the gradient of that fluid, those in the water leg follow the water gradient, and the depth where the two lines cross is
+Why (decision of 2026-11-04): pressures measured in a hydrocarbon leg follow the gradient of that fluid, those in the water leg follow the water gradient, and the depth where the two lines cross is
 the FREE WATER LEVEL (FWL), the pressure-defined level at which the hydrocarbon and water pressures are equal.  It is the most robust way to place a contact because it needs no log or
 sample reading of saturation.  The observed oil-water contact lies ABOVE the FWL by the height the entry pressure of the rock holds up (the transition zone): `contact_above_fwl_m`.
 A seal holds a hydrocarbon column of at most  entry pressure / (water gradient - hydrocarbon gradient): `max_column_height_m` (seal capacity).

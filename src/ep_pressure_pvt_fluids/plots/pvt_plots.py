@@ -1,7 +1,7 @@
 """Matplotlib figures of the PVT charts for the notebooks and reports: the same zones, pastel colours, hollow markers and model-fluid surface as the dashboards
-(the dashboards and the pressure-temperature chart with the HPHT classes live in ep-pressure-pvt-fluids, which also needs the pressure library).  EDS light theme (AGENTS.md section 10); each function draws on the axes it is given.
+(the dashboards and the pressure-temperature chart with the HPHT classes live in ep-pressure-pvt-fluids, which also needs the pressure library).  EDS light theme; each function draws on the axes it is given.
 
-A hollow marker is a test whose temperature is ESTIMATED from the geothermal gradient of its well (docs/temperature.md); a solid one has a gauge temperature.
+A hollow marker is a test whose temperature is ESTIMATED from the geothermal gradient of its well; a solid one has a gauge temperature.
 """
 
 from __future__ import annotations

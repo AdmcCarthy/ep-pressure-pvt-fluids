@@ -1,11 +1,11 @@
 # Measurement types: what kind of measurement a fluid / pressure data point comes from, the symbol that shows it on every PVT chart, and the issues each type is prone to.
-# Details, the feasibility review and the patterns found: docs/measurement_types.md.  Code: src/processing/measurement_types.py (classification), src/utils/pvt_plots.py and
-# scripts/build_pvt_dashboard.py / build_pvt3d_dashboard.py (symbols).  Issues cite the expert knowledge store (knowledge/pvt.yaml, docs/knowledge.md).
+# Details, the feasibility review and the patterns found: docs/measurement_types.md.  Code: measurement_types (classification), pvt_plots and
+# scripts/build_pvt_dashboard.py / build_pvt3d_dashboard.py (symbols).  Issues cite the expert knowledge store.
 #
 # Principles
 #   * A type is only assigned from EVIDENCE in the data (the official Sodir records), with a confidence and the evidence text; never guessed.  What cannot be told is `other`
 #     (an X) or stays an honest `dst` (no sample-record information), never a confident-looking category.
-#   * Shape = measurement type; colour = whatever the chart is coloured by; hollow = estimated temperature (docs/temperature.md).  Hollow needs a fillable shape, so line-only
+#   * Shape = measurement type; colour = whatever the chart is coloured by; hollow = estimated temperature.  Hollow needs a fillable shape, so line-only
 #     shapes (cross, x) are used only for types that are not plotted as hollow today.
 #   * Issues are things that can make a measurement of this type unrepresentative.  They are shown, never corrected.  `measurable` says whether the open data allow a per-test
 #     indicator (a proxy is labelled as one).
@@ -16,7 +16,7 @@ version: 1
 sample_link:
   depth_tolerance_m: 5.0                       # ASSUMPTION: a sample interval within this distance of the DST interval (MD RT) counts as overlapping it
   # Sodir `wellbore_oil_sample.test_type` -> measurement type of the SAMPLE.  Values seen on 2026-11-03: DST 746, MDT 294, RFT 10, PROD 9, FMT 5, MINI 5, FIT 2, MUD 1.
-  # Confirmed by Adam (2026-11-03): FIT = formation INTEGRITY test (a pressure test at the casing shoe, not a fluid sampling test: its 2 oil-sample records are kept as `other` and noted
+  # Confirmed by the maintainer (2026-11-03): FIT = formation INTEGRITY test (a pressure test at the casing shoe, not a fluid sampling test: its 2 oil-sample records are kept as `other` and noted
   # in DQ-093), MINI = mini drill-stem test, PROD = production test.
   sodir_test_type:
     DST: dst
@@ -140,7 +140,7 @@ types:
     marker: D
     glyph: "◆"
     classifiable: "yes"
-    plotted_now: false                          # becomes true when the pvt_report sheet of the data-gap workbook is filled and matched (docs/enrichment.md)
+    plotted_now: false                          # becomes true when the pvt_report sheet of the data-gap workbook is filled and matched
     evidence: "The saturation state comes from a stated bubble / dew point of a matched manual PVT-report row (saturation_basis = pvt_report); the GLR and pressure are still the DST's."
     issues: [lab_accuracy, gor_basis_error, non_original_fluid]
   other:
@@ -206,4 +206,4 @@ issues:
     label: "The saturation envelope is a correlation fitted to other fluids"
     effect: "the forbidden / diphasic reading depends on the envelope (Glaso for North Sea oils, a configured dew-point curve); volatile oils near the critical point fit worst"
     knowledge: [fr-correlations-fit-their-data, gl80-data-basis-and-accuracy, gl80-volatile-oil-exponent]
-    measurable: "yes, as a sensitivity: the state under the other correlation (notebook 13, section 4e)"
+    measurable: "yes, as a sensitivity: the state under the other correlation (the analysis notebooks, section 4e)"

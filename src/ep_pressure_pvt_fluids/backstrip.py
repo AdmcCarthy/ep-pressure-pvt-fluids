@@ -1,11 +1,11 @@
-"""Back-stripping, first form: decompaction and the weight of a lithology column.  Pure functions (docs/knowledge_architecture.md section 5).
+"""Back-stripping, first form: decompaction and the weight of a lithology column.  Pure functions.
 
 Model (Wikipedia 'Back-stripping' states the law; the grain-conservation step below is derived here, it is arithmetic): porosity falls exponentially with depth below the seabed,
 phi(z) = phi0 exp(-c z).  The thickness of SOLID grains in a layer between z1 and z2 is  S = (z2 - z1) - (phi0 / c) (exp(-c z1) - exp(-c z2))  and is conserved when the layer is moved to another depth,
 so a decompacted thickness follows from S by solving for the new base depth.  The weight of a column is the sum over layers of grains (S x grain density) plus the water in the pores.
 
 LEFT OUT and named: eroded rock, the burial history through time, sea-level and the isostatic (tectonic subsidence) step; lithology shares and compaction constants are assumptions (placeholders, grade
-`placeholder` in the knowledge pack).  The overburden function compares with the generic trend of src/processing/pore_pressure.py.
+`placeholder` in the knowledge pack).  The overburden function compares with the generic trend of pore_pressure.
 """
 from __future__ import annotations
 

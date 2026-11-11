@@ -1,6 +1,6 @@
-"""Colours of the PVT charts, shared by the dashboards (scripts/build_pvt_dashboard.py, build_pvt3d_dashboard.py) and the notebook figures (src/utils/pvt_plots.py).
+"""Colours of the PVT charts, shared by the dashboards (scripts/build_pvt_dashboard.py, build_pvt3d_dashboard.py) and the notebook figures.
 
-Zone fills are pastel and flat per zone (the pages blend them across the boundaries); the points use the stronger EDS colours.  Light theme (AGENTS.md section 10).
+Zone fills are pastel and flat per zone (the pages blend them across the boundaries); the points use the stronger EDS colours.  Light theme.
 """
 
 from __future__ import annotations

@@ -10,7 +10,7 @@ The physical boundaries of the 3D PVT chart (`scripts/build_pvt3d_dashboard.py`,
     * the dome closes at the critical point (Tc, Pc, Vc = Zc R Tc / Pc, Zc = 0.3074 for this equation): there the first and second pressure derivatives with
       respect to volume vanish; above Tc there is one phase (supercritical) on every isotherm.
 Pure functions, no side effects.  A pure component is NOT a reservoir mixture: the phase envelope of a mixture is a loop in the P-T plane (cricondentherm,
-cricondenbar) and needs the composition, which Sodir does not give (docs/pvt3d.md).
+cricondenbar) and needs the composition, which Sodir does not give.
 """
 
 from __future__ import annotations

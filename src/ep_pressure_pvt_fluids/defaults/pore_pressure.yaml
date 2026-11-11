@@ -1,4 +1,4 @@
-# Pore pressure, overburden, fracture and the drilling window (src/processing/pore_pressure.py, notebook 24, docs/pore_pressure.md).
+# Pore pressure, overburden, fracture and the drilling window.
 # Every value marked ASSUMPTION is a placeholder for data that open data do not hold (density and sonic logs, rock strength, extended leak-off tests); it is shown as such and replaced when the data come.
 
 # Overburden stress (OBG): the weight of everything above: the seawater column plus the sediments, sigma_v(z) = rho_w g z_w + integral of rho_b g dz.  Without a density log the bulk density follows an

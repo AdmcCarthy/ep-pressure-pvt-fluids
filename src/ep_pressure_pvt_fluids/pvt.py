@@ -424,7 +424,7 @@ def build_well_dst_pvt(pressure: pd.DataFrame, dst: pd.DataFrame, cfg: dict[str,
                                "the stated bubble / dew point gives another saturation state than the envelope estimate: a check of the envelopes (config/pvt.yaml)"))
     t["near_critical_zone"] = t["glr_sm3_sm3"].between(*cfg["critical_band"]["glr_sm3_sm3"])         # GLR inside the critical band (at any pressure)
     t = pd.concat([t, classify_biodegradation(t["temperature_used_c"], t["api"], t["area"], cfg)], axis=1)
-    measured, more = mt.classify_measurements(t, oil_samples)                       # measurement type of each test (docs/measurement_types.md): from the official oil-sample records, never guessed
+    measured, more = mt.classify_measurements(t, oil_samples)                       # measurement type of each test: from the official oil-sample records, never guessed
     events += more
     t = pd.concat([t, measured], axis=1)
     flags = pd.Series("", index=t.index, dtype="object")
