@@ -1,6 +1,6 @@
 [project]
 name = "ep-pressure"
-version = "0.1.0"
+version = "0.2.0"
 description = "Pore pressure and pressure regimes, HPHT classes, buoyancy and column effects, free water level, compaction (back-stripping), and the figures and style rules of"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -21,7 +21,7 @@ plots = ["matplotlib"]
 
 [tool.uv.sources]
 ep-physics-base = { git = "https://github.com/AdmcCarthy/ep-physics-base", tag = "v0.1.0" }
-ep-fluids = { git = "https://github.com/AdmcCarthy/ep-fluids", tag = "v0.1.0" }
+ep-fluids = { git = "https://github.com/AdmcCarthy/ep-fluids", tag = "v0.2.0" }
 
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
@@ -30,6 +30,8 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "matplotlib",
+    "shapely",
     "ruff>=0.5",
 ]
 

@@ -19,11 +19,23 @@ import pandas as pd
 from ep_physics_base import units as pu
 
 
+_DEFAULT_OVERLAY: Any = None
+
+
+def register_overlay(overlay: Any) -> None:
+    """Set the function that `load_config()` applies when the caller passes none (None removes it).  A host application uses this to let a knowledge pack replace values
+    everywhere in the library, including the library's own calls, while the library never imports a knowledge store."""
+    global _DEFAULT_OVERLAY
+    _DEFAULT_OVERLAY = overlay
+
+
 def load_config(overlay: Any = None) -> dict[str, Any]:
-    """config/pore_pressure.yaml (the packaged defaults, or a project file of that name).  `overlay` is an optional function that takes the configuration and returns it with values replaced, for example the values of a knowledge pack: the library never imports a knowledge store."""
+    """config/pore_pressure.yaml (the packaged defaults, or a project file of that name).  `overlay` is an optional function that takes the configuration and returns it with values
+    replaced, for example the values of a knowledge pack (default: the one set with `register_overlay`): the library never imports a knowledge store."""
     from ep_physics_base.config import load_yaml
 
     cfg = load_yaml("config/pore_pressure.yaml")
+    overlay = overlay or _DEFAULT_OVERLAY
     return overlay(cfg) if overlay else cfg
 
 

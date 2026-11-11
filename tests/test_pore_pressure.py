@@ -50,3 +50,18 @@ def test_drilling_window_needs_pp_and_fg_and_marks_a_missing_shear_failure_gradi
 def test_overbalance_sign():
     assert float(pp.overbalance(1.6, 1.4)) > 0 > float(pp.overbalance(1.3, 1.4))
     assert abs(float(pu.mud_pressure_bar(1.6, 3000.0, 25.0)) - 1.6 * pu.BAR_PER_M_PER_SG * 3025.0) < 1e-9
+
+def test_a_registered_overlay_is_applied_when_none_is_passed_and_removed_again():
+    base = pp.load_config()
+    marker = base["overburden"]["matrix_density_g_cm3"] + 0.01
+
+    def overlay(cfg):
+        cfg["overburden"]["matrix_density_g_cm3"] = marker
+        return cfg
+
+    pp.register_overlay(overlay)
+    try:
+        assert pp.load_config()["overburden"]["matrix_density_g_cm3"] == marker
+    finally:
+        pp.register_overlay(None)
+    assert pp.load_config()["overburden"]["matrix_density_g_cm3"] == base["overburden"]["matrix_density_g_cm3"]
