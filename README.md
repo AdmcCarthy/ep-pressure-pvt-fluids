@@ -2,7 +2,7 @@
 
 Pore pressure, pressure regimes, the drilling window and their figures; geochemistry screening (FIS, Rock-Eval); PVT classification, equations of state, column grading, fluid gradients and measurement types; and the pages and charts that need both (the PVT dashboards, the HPHT pressure-temperature chart). One library because a pressure in a reservoir cannot be read without the fluid in it, and a fluid cannot be placed without its pressure.
 
-**Status: private, built public-ready.** The library follows the rules of a public one (no host-repository imports, no data, no private paths, an automated publication gate in `scripts/publication_gate.py`) and is published only when that gate passes. Licence: MIT with acknowledgement (`LICENSE`).
+**Status: public (2026-11-11).** The library follows the rules of a public one (no host-repository imports, no data, no private paths, an automated publication gate in `scripts/publication_gate.py`); the gate runs in CI and must stay at zero blockers. Licence: MIT with acknowledgement (`LICENSE`).
 
 ## Install
 
