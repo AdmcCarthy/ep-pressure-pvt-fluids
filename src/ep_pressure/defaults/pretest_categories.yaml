@@ -1,0 +1,51 @@
+# Pretest signals (docs/borehole.md section 14, src/processing/formation_pressure.py).
+# DESIGN (Adam, 2026-11-06): three SUBJECTIVE signals are kept apart and NEVER collapsed into one ranking by a rule of thumb. A low mobility describes how DIFFICULT the measurement is, not how good the test is: a test at low
+# mobility can be a good test (a long build-up that stabilised, a modern tester that gives precise values in tight rock), and a high-mobility test can be bad. Absolute rulings are still to be defined (Adam); until then each test
+# shows its signals, a traceable COMBINATION with a description (`combination_notes`, provisional) and only HARD EXCLUSIONS change a verdict.
+# Mobility limits CONFIRMED by Adam 2026-11-06 (0.1 and 1 mD/cP); they remain labelled assumptions until a reviewed source states them (requests req.094-096). Mobility is mD/cP.
+mobility_categories:                  # evaluated top-down on the mobility; `condition` = how demanding the measurement is, not how good the result is
+  - {id: very_good,   label: "very good mobility (above 100)",  min: 100.0, condition: easy,           marker: "o", reason: "fast build-up expected: the pressure reaches the formation pressure in minutes"}
+  - {id: good,        label: "good mobility (1 to 100)",        min: 1.0,   condition: moderate,       marker: "o", reason: "slower build-up expected; a stabilised value is likely"}
+  - {id: low,         label: "low mobility (0.1 to 1)",         min: 0.1,   condition: demanding,      marker: "s", reason: "long build-up expected (the NPD class 'poor permeability'); the drawdown is slow to equalise and the pressure can be supercharged or unstabilised; a good test is possible with a long build-up or a capable tester"}
+  - {id: very_low,    label: "very low mobility (below 0.1)",   min: 0.0,   condition: very_demanding, marker: "^", reason: "near-static drawdown expected; a modern tester can still measure precisely in tight rock, so the category says the test is hard, not that it is bad (limit assumed near 0.1; a summary cites 0.01)"}
+quality_override:                     # the provider's seal codes (NPD Blue Book 4.6.2 as the file states it): the only codes that exclude a test
+  0: {id: lost_seal, label: "lost seal (provider code 0)",           marker: "x", reason: "the packer did not seal: the pressure is the mud or a leak, not a formation pressure"}
+  1: {id: tight,     label: "tight, dry test (provider code 1)",    marker: "x", reason: "dry test: the formation did not deliver fluid, the pressure is not a formation pressure"}
+no_mobility: {id: not_stated, label: "mobility not stated",         marker: "D", condition: unknown, reason: "no mobility in the record"}
+provider_code_text:                   # the provider's own definition, kept as text (it is NOT used to rank the test; 2 is defined as 'mobility below 1 mD' but is given up to a mobility of about 10)
+  2: "poor permeability (provider: mobility below 1 mD)"
+  3: "good permeability (provider: 1 to 100 mD)"
+  4: "very good permeability (provider: above 100 mD)"
+remark_rules:                         # the engineer's remark of the report table; every rule that matches is kept. polarity: positive | negative | neutral. exclude: true = a hard exclusion (not a formation pressure).
+  - {id: not_stabilised,   pattern: "not\\s+stabili[sz]|did not stabili[sz]|not stabelized|unstabili[sz]", polarity: negative, exclude: false, meaning: "the engineer reports that the pressure did not stabilise"}
+  - {id: supercharge,      pattern: "supercharg",                                                          polarity: negative, exclude: false, meaning: "the remark names supercharging"}
+  - {id: tight_or_dry,     pattern: "tight|dry test|\\bdry\\b",                                            polarity: negative, exclude: true,  meaning: "the remark names a tight formation or a dry test"}
+  - {id: seal_problem,     pattern: "lost seal|seal fail|no seal|leak",                                    polarity: negative, exclude: true,  meaning: "the remark names a seal problem"}
+  - {id: mobility_failed,  pattern: "mobility failed|mobility not",                                        polarity: negative, exclude: false, meaning: "the mobility calculation failed: the mobility category rests on a value the engineer doubts"}
+  - {id: data_incomplete,  pattern: "data lost|failed when w|lost.*memory|real-?time data lost",           polarity: negative, exclude: false, meaning: "part of the record was lost or not written; the value may rest on memory data"}
+  - {id: repeat_test,      pattern: "second test|attempt|b test|repeat",                                  polarity: neutral,  exclude: false, meaning: "a repeat or second test at the station"}
+  - {id: engineer_good,    pattern: "good test",                                                           polarity: positive, exclude: false, meaning: "the engineer calls it a good test"}
+combination_notes:                    # PROVISIONAL descriptions of a combination (mobility condition + engineer's polarity); the rulings are to be defined. First match wins; `*` matches anything.
+  - {condition: [demanding, very_demanding], polarity: positive, note: "Hard measurement, and the engineer calls it a good test: the build-up was judged to have stabilised, or the tester coped with the tight rock. Not excluded; a supercharge is neither shown nor ruled out by the data."}
+  - {condition: [demanding, very_demanding], polarity: negative, note: "Hard measurement and the engineer reports a problem: the pressure is a bound at best."}
+  - {condition: [demanding, very_demanding], polarity: none,     note: "Hard measurement with no engineer's remark in the file: stabilisation and supercharging cannot be judged from the data."}
+  - {condition: [easy, moderate],            polarity: positive, note: "Easy or moderate measurement and a good test: no signal of a problem."}
+  - {condition: [easy, moderate],            polarity: negative, note: "Easy or moderate measurement but the engineer reports a problem: the remark decides."}
+  - {condition: [easy, moderate],            polarity: none,     note: "Easy or moderate measurement, no remark in the file: no signal of a problem, none stated either."}
+  - {condition: ["*"],                       polarity: "*",      note: "Signals incomplete: see the separate fields."}
+trend:
+  min_reference_tests: 3              # tests needed in the same wellbore and unit to draw a pressure-depth trend
+  reference_conditions: [easy, moderate]   # references: easy or moderate measurements with no negative remark (a good test at low mobility is NOT used as a reference automatically: ruling to be defined)
+  flag_residual_bar: 3.0              # ASSUMPTION: a test this far above the trend of the reference tests is flagged as a possible supercharge (a different pressure regime reads the same)
+tool_class:                           # from the file name: MWD / LWD = tool in the drill string, EWL = wireline. The tool generation is not stated in the open data; a modern tester can give precise values in tight rock
+  lwd_patterns: ["_MWD", "MWD_"]
+  wireline_patterns: ["_EWL", "EWL_", "MDT", "RFT"]
+depletion:
+  first_production_entity: VOLVE      # production_monthly.entity_name whose first month marks the start of production
+colours:                              # colour = the ENGINEER's assessment (what the report says), shape = the mobility category
+  positive: "#2E7D32"                 # the engineer calls it a good test
+  negative: "#E08A00"                 # the engineer reports a problem (not stabilised, mobility failed, data lost)
+  none_stated: "#0B6FA4"              # no remark in the file
+  excluded: "#6B7782"                 # hard exclusion (lost seal, tight, dry)
+
+manual_tests: {}                    # manual enrichment, key '<well_folder>|<test_no>': {tester_generation: '<text>', source: '<document>'}; a stated generation replaces 'not stated' in the limitations (docs/borehole.md section 15)

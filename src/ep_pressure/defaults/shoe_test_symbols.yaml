@@ -1,0 +1,27 @@
+# Symbols for casing-shoe pressure tests, the same in every figure (src/utils/shoe_tests.py).  The Sodir casing table gives the test type as LOT, FIT, XLOT (and XLO) or nothing.
+# A symbol is a SHAPE (colour stays the project orange for a test, so the shape carries the type); `meaning` says what each test can and cannot say about the rock.
+types:
+  LOT:
+    marker: v
+    filled: true
+    label: leak-off test (LOT)
+    meaning: pumped until fluid enters the rock; the leak-off pressure is a rough proxy of the minimum stress, not a measurement of it
+  FIT:
+    marker: s
+    filled: true
+    label: formation integrity test (FIT)
+    meaning: stopped before leak-off, so the rock is at least this strong; a LOWER BOUND of the fracture gradient
+  XLOT:
+    marker: P
+    filled: true
+    label: extended leak-off test (XLOT)
+    meaning: the fracture is grown further and shut in, so closure pressure and shut-in pressure can be read; the preferred minimum-stress test (the open data hold only the one value)
+  UNDIFFERENTIATED:
+    marker: "^"
+    filled: false
+    label: test type not stated (undifferentiated)
+    meaning: a leak-off equivalent density is given but the record does not say whether it is a LOT, FIT or XLOT; read as a lower bound
+aliases:
+  XLO: XLOT                 # ASSUMPTION: 20 records carry the truncated code XLO next to 18 XLOT; read as XLOT (to confirm with Sodir)
+  LOT / FIT: UNDIFFERENTIATED
+  "": UNDIFFERENTIATED

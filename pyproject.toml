@@ -1,0 +1,45 @@
+[project]
+name = "ep-pressure"
+version = "0.1.0"
+description = "Pore pressure and pressure regimes, HPHT classes, buoyancy and column effects, free water level, compaction (back-stripping), and the figures and style rules of"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "AdmcCarthy", email = "24669992+AdmcCarthy@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "ep-physics-base",
+    "ep-fluids",
+]
+
+[project.optional-dependencies]
+plots = ["matplotlib"]
+
+[tool.uv.sources]
+ep-physics-base = { git = "https://github.com/AdmcCarthy/ep-physics-base", tag = "v0.1.0" }
+ep-fluids = { git = "https://github.com/AdmcCarthy/ep-fluids", tag = "v0.1.0" }
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 200
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["E501", "E701", "E702", "E731", "E741"]

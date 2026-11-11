@@ -1,0 +1,31 @@
+# Pore pressure, overburden, fracture and the drilling window (src/processing/pore_pressure.py, notebook 24, docs/pore_pressure.md).
+# Every value marked ASSUMPTION is a placeholder for data that open data do not hold (density and sonic logs, rock strength, extended leak-off tests); it is shown as such and replaced when the data come.
+
+# Overburden stress (OBG): the weight of everything above: the seawater column plus the sediments, sigma_v(z) = rho_w g z_w + integral of rho_b g dz.  Without a density log the bulk density follows an
+# exponential compaction trend of the porosity (the Sclater and Christie type used in the Sodir overpressure slides, Riis et al., knowledge `riis-overpressure-regimes`):
+#   phi(z) = phi0 exp(-z / lambda),  rho_b = rho_matrix (1 - phi) + rho_fluid phi,   z = depth BELOW THE SEABED.
+overburden:
+  seawater_gradient_bar_per_m: 0.1005            # water column (1.025 sg), the same as the hydrostatic gradient of config/pressure.yaml
+  surface_porosity: 0.55                         # ASSUMPTION (shale-dominated North Sea sediment at the seabed; replace with a density log)
+  compaction_length_m: 2500.0                    # ASSUMPTION (exponential decay length of the porosity)
+  matrix_density_g_cm3: 2.65                     # quartz-dominated matrix
+  fluid_density_g_cm3: 1.03                      # pore water
+  # (A lithostatic gradient is about twice the hydrostatic one: 2.0-2.4 sg of rock against 1.03 sg of water, 0.20-0.24 bar/m.)
+
+# Fracture pressure bounds from the minimum stress (Zhang; knowledge `zh-fracture-bounds`):  sigma_min = nu / (1 - nu) (sigma_v - p) + p  (lower bound),  2 sigma_min - p  (upper bound, breakdown, no tensile
+# strength), the mean is the most likely fracture pressure.  Poisson's ratio comes from compressional and shear velocity; none is held, so a band is used.
+poisson_ratio:
+  band: [0.25, 0.30, 0.35]                       # ASSUMPTION (central value in the middle): lower, central, higher
+
+# The Sodir overpressure slides (Riis et al., read): pore pressures in the overpressured regime build up to about 100 bar below the lithostatic pressure (water depth 250-400 m, North Sea and Norwegian
+# Sea); a leakage line related to the fracture gradient of leak-off tests; for shallow water (50-150 m) the line lies slightly closer to the lithostatic.  Used as an indicative upper limit of pore pressure.
+leakage_line:
+  below_lithostatic_bar: 100.0
+  water_depth_range_m: [250.0, 400.0]
+
+# Mud weight, ESD and ECD.  Mud weight in the Sodir table is the SURFACE density.  The equivalent static density differs from it by the compressibility and thermal expansion of the mud;
+# the equivalent circulating density adds the annular friction pressure loss.  Neither is in the open data: bands, ASSUMPTION.
+mud:
+  esd_minus_mud_weight_sg: [-0.03, 0.02]         # ASSUMPTION: ESD against the surface mud weight (thermal expansion lowers it, compressibility raises it)
+  annular_loss_sg: [0.02, 0.08]                  # ASSUMPTION: ECD minus ESD, a typical range for a deep section (flow rate, hole geometry and rheology fix it)
+  window_margin_sg: 0.05                         # ASSUMPTION: a drilling window narrower than this is reported as narrow

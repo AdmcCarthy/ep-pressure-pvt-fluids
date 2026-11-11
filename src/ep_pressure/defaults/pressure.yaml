@@ -1,0 +1,123 @@
+# Pressure, temperature and fracture-gradient screening (src/processing/pressure.py, docs/pressure.md).
+# Everything here is configuration so it can be edited and re-run.  Values marked ASSUMPTION are screening choices, not data.
+
+depth:
+  assumed_rt_elev_m: 25.0                  # ASSUMPTION: rotary table height above MSL when the header has none (typical NCS rig); flagged `rt_assumed`
+  near_vertical_tvd_md_ratio: 0.98         # reported TD TVD / TD MD at or above this: MD is used as a TVD proxy (within 2 %), flagged `md_near_vertical`
+  # Below it, or with no TD TVD, the depth is MD only (`md_deviated`, `md_no_tvd`): depth is OVERESTIMATED, so hydrostatic is overestimated and the
+  # overpressure is a MINIMUM.  A survey (well_survey / data/manual well_depth sheet) gives `tvd_survey` and removes the flag.
+
+hydrostatic:
+  gradient_bar_per_m: 0.1005               # ASSUMPTION: 1.025 sg (sea water); North Sea formation water is 1.03-1.07 sg, so ratios near 1.05 are still "normal"
+  bar_per_m_per_sg: 0.0980665              # pressure gradient of 1.0 sg
+  seabed_temperature_c: 4.0                # ASSUMPTION: North Sea bottom water, for the geothermal gradient below the seabed
+
+# Regimes on the pore-pressure ratio to the hydrostatic pressure at the same TVDSS, as equivalent mud weight (sg) = ratio x hydrostatic sg.
+# A test inside a hydrocarbon column also reads above the water line (buoyancy), up to about +0.05-0.1 sg for a gas column of a few hundred metres, so
+# the lowest overpressure classes are not proof of real overpressure.
+regimes:                                   # name, upper bound of pressure / hydrostatic (first match)
+  - {name: subnormal,            below: 0.95}        # depleted or under-pressured, or a wellhead value mistaken for reservoir pressure
+  - {name: normal,               below: 1.08}
+  - {name: mildly overpressured, below: 1.30}
+  - {name: overpressured,        below: 1.60}
+  - {name: highly overpressured, below: 1000.0}
+
+# Real UNDERPRESSURE (pore pressure below hydrostatic) occurs in the Barents Sea, from uplift and erosion (for example the Hoop area and the Triassic intervals):
+# there a ratio below the "subnormal" bound is a valid regime.  Anywhere else a low value is a screening suspect (wellhead or flowing value, depletion, MD depth).
+underpressure:
+  areas: [BARENTS SEA]                  # well_header.main_area (Sodir), case-insensitive; the regional AOIs are not available in the mid-layer build
+  regime_name: underpressured
+  suspect_below_outside: 0.80           # ASSUMPTION: outside these areas a ratio below this lowers the confidence to low and is flagged
+
+# The Sodir shut-in and flowing pressures are, for most tests, WELLHEAD values (lighter fluid column above the gauge); only bottom-hole pressure is
+# the reservoir pressure.  A shut-in value within this fraction of the bottom-hole value of the same test is treated as a bottom-hole value.
+shut_in:
+  bottom_hole_min_ratio: 0.92
+  probable_bottom_hole_gradient_bar_per_m: 0.085   # with no bottom-hole pressure: a shut-in at or above this gradient is a probable bottom-hole value (low confidence)
+
+# Screen on the ratio to the hydrostatic pressure: a bottom-hole value below the lower limit cannot be a static reservoir pressure (21 of 262 are
+# like this: wellhead or flowing values), above the upper limit it is an entry or unit error (for example 385 delivered in bar and read as MPa).
+# Rejected values are kept in `rejected_pressure_bar`, never used and never corrected.
+screen:
+  min_ratio: 0.5       # ASSUMPTION: depleted or under-pressured reservoirs seldom read below half of hydrostatic in a test
+  max_ratio: 2.2       # ASSUMPTION: about 2.2 sg, the most extreme HPHT pore pressures on the NCS
+
+# Unit sense check of the converted pressures (MPa -> bar): the median bottom-hole pressure / MD gradient must stay in this window (hydrostatic 0.098-0.108
+# bar/m with some overpressure).  Raw MPa read as bar would give 0.01 bar/m, bar read as MPa 1.0 bar/m.
+unit_check:
+  bhp_gradient_bar_per_m: [0.085, 0.125]
+  min_tests: 20
+
+# HPHT classes, pressure and temperature separately; a test is HPHT when BOTH exceed the class threshold.
+# ASSUMPTION: HSE / Schlumberger-style thresholds (10,000 / 15,000 / 20,000 psi and 300 / 350 / 400 F), the Norwegian practice is similar.
+hpht:
+  pressure_bar:     [690.0, 1034.0, 1379.0]
+  temperature_c:    [149.0, 177.0, 204.0]
+  names:            [standard, HPHT, ultra-HPHT, extreme-HPHT]      # index = number of thresholds exceeded by BOTH (the lower of the two ranks)
+
+gradient:                                  # per-well pressure-depth regression
+  min_points: 3
+  min_depth_range_m: 150.0
+  min_r2_for_hint: 0.7
+  fluid_bands_bar_per_m:                   # ASSUMPTION: indicative only (a gradient is a mixture of fluids and of regimes)
+    - {name: gas,                 below: 0.05}
+    - {name: oil or condensate,   below: 0.092}
+    - {name: water,               below: 0.115}
+    - {name: overpressured water, below: 1000.0}
+
+fracture:                                  # leak-off (LOT) and formation integrity (FIT) tests of the casing table
+  emw_plausible_sg: [0.9, 2.6]             # outside: kept, flagged, not used
+  narrow_window_sg: 0.10                   # fracture minus pore equivalent mud weight below this: narrow window
+  # LOT = leak-off (close to the fracture gradient), FIT = integrity only (a LOWER bound of the fracture gradient)
+
+# Buoyancy (docs/pressure.md section 8; knowledge/pressure.yaml zh-hydraulic-connection): a test inside a hydrocarbon column reads above the water pressure of the same depth because the light
+# fluid has a lower gradient than water.  The pressure the column puts on the aquifer at its contact is  p_test + g_hc x (z_contact - z_test); the excess that is only the column is
+# (g_water - g_hc) x (z_contact - z_test).  Contacts are the ones stated in the well-history text (fact_type `contact`), as TVDSS.
+buoyancy:
+  contact_labels:                          # contact label in the history text -> class
+    oil_water: [OWC, HWC]                  # HWC = hydrocarbon-water contact
+    gas_oil: [GOC]
+    gas_water: [GWC]
+    down_to: [ODT, GDT]                    # oil / gas down to: the contact is at or below this depth (a minimum column)
+  max_column_m: 400.0                      # a contact further than this below the test is taken to belong to another accumulation
+  fluid_gradient_bar_per_m:                # ASSUMPTION: in-situ gradient of the phase [central, low, high]; gas 0.15-0.40 g/cm3, oil 0.66-0.92 g/cm3 at reservoir conditions
+    gas: [0.025, 0.015, 0.040]
+    oil: [0.075, 0.065, 0.090]
+  oil_in_situ_density_factor: 0.90         # ASSUMPTION: in-situ oil density = DST stock-tank density x this (dissolved gas makes live oil lighter); used when a plausible DST density exists
+  oil_density_plausible: [0.70, 1.00]      # g/cm3: outside this a DST density is not used (the Sodir table has values up to 8.8)
+  unknown_contact_ratio: 1.04              # a gas or oil test at or above this pressure ratio with no contact on record is flagged `buoyancy_unknown_contact`
+
+# Free water level (docs/pressure.md section 8): the depth where a hydrocarbon gradient crosses the water gradient, from formation-pressure points with a fluid label.
+fwl:
+  assumed_water_gradient_bar_per_m: 0.1005   # a water line through a single water point uses this gradient (null = two or more water points are required)
+  plausible_range_m: 150.0                   # a crossing further than this outside the tested depths is an extrapolation (status `outside the tested range`)
+  min_gradient_bar_per_m: {gas: 0.005, oil: 0.05}     # ASSUMPTION: plausible in-situ gradient bands (g/cm3 x 0.0981): gas 0.05-0.6, oil 0.5-0.97
+  max_gradient_bar_per_m: {gas: 0.060, oil: 0.095}
+
+# In-situ gradients from the fluid (src/processing/fluid_gradients.py; docs/pressure.md section 10): density x g, set by PVT and hence by the source rock and maturity, not by the area.
+fluid_gradients:
+  gas:                                     # rho = p M / (Z R T),  M = gas gravity x 28.9647
+    gravity_default: 0.70                  # ASSUMPTION: used where the test has no plausible DST gas gravity (the DST median is 0.715)
+    gravity_plausible: [0.55, 1.20]
+    z: [0.90, 1.00, 0.80]                  # ASSUMPTION: Z factor [central, the Z that gives the lowest gradient (ideal gas), the Z that gives the highest]; a worked example in the lecture notes gives Z = 0.85 at 3000 psia, 180 F
+    clip_bar_per_m: [0.008, 0.080]
+  oil:                                     # rho = (rho_sto + Rs x rho_gas_sc) / Bo
+    sto_density_plausible: [0.70, 1.00]    # g/cm3: a DST density outside is not used (the Sodir table has values up to 8.8)
+    clip_bar_per_m: [0.050, 0.095]         # ASSUMPTION: an oil gradient is kept in this band (0.5-0.97 g/cm3): a dense oil with a high GLR and a low Bo band would otherwise reach the water gradient
+    rs_max_sm3_sm3: 600.0                  # a GLR above this is not the solution gas of an oil leg: Rs is then taken as 0
+    bo_by_class:                           # ASSUMPTION: Bo [central, low, high] by PVT fluid class (Bo >= 1 by definition; volatile and near-critical oils shrink much more)
+      black oil: [1.20, 1.05, 1.40]
+      volatile oil: [1.80, 1.45, 2.50]
+      near-critical: [2.50, 2.00, 3.50]
+      default: [1.25, 1.05, 1.60]
+  water:
+    band_bar_per_m: [0.0990, 0.1052]       # ASSUMPTION: fresher / hot aquifer to a strong brine, the sensitivity band of the water gradient
+    salinity_anchors:                      # [salinity ppm, gradient bar/m]: fresh water 0.433 psi/ft, 55,000 ppm 0.450 psi/ft, 88,000 ppm 0.465 psi/ft (AAPG wiki, seen in a search result 2026-11-04,
+      - [0, 0.0980]                        # page not fetched: LITERATURE VALUES TO CONFIRM; 1 psi/ft = 0.22621 bar/m); linear in between, not extrapolated
+      - [55000, 0.1018]
+      - [88000, 0.1052]
+
+# Pressure-depth figures (notebook 22, src/utils/pressure_plots.py): the wells to draw.  An empty list = the wells with the most tests that have a contact below them.
+plots:
+  wells: []                                # for example ["34/10-9", "34/10-30", "6507/7-3"]: well names as Sodir writes them
+  max_auto_wells: 9

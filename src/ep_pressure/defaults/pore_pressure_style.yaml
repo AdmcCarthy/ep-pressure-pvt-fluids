@@ -1,0 +1,36 @@
+# Style guide for pore pressure figures (src/utils/pp_style.py).  Adam, 2026-11-05: use these for every pore pressure figure from now on.
+# Amended 2026-11-05: FG is DARK blue; HYDROSTATIC is LIGHT blue.  "PP expected" (red) is used ONLY when a pore pressure has been predicted away from hydrostatic (a trend from logs, a basin
+# model); until then the reference is called and drawn as hydrostatic, never as the expected pore pressure.
+# One line style per quantity, the same in every figure, so a reader learns it once.  Colour = the quantity, dash = expected / minimum / maximum.
+#   expected: solid     minimum: dotted (PP, FG) or dashed (Sh)     maximum: dashed
+lines:
+  sh:      {label: "Sh (minimum horizontal stress)",          color: "#2E9D3E", ls: "-",  lw: 1.8}      # green line
+  sh_min:  {label: "Sh min (lowest plausible)",                color: "#2E9D3E", ls: "--", lw: 1.5}      # green dashed
+  fg:      {label: "FG (fracture gradient, most likely)",      color: "#12408C", ls: "-",  lw: 1.8}      # blue line
+  fg_min:  {label: "FG min",                                   color: "#12408C", ls: ":",  lw: 1.6}      # blue dotted
+  fg_max:  {label: "FG max",                                   color: "#12408C", ls: "--", lw: 1.5}      # blue dashed
+  sfg:     {label: "SFG (shear failure gradient)",             color: "#7B3FA0", ls: "-",  lw: 1.8}      # purple line
+  obg:     {label: "OBG (overburden gradient)",                color: "#7A2E1D", ls: "-",  lw: 1.8}      # dark red to brown
+  mw:      {label: "MW (mud weight)",                          color: "#000000", ls: "-",  lw: 1.6}      # solid black
+  hydrostatic:     {label: "Hydrostatic (pore pressure not predicted away from it)", color: "#7EC8F0", ls: "-",  lw: 2.0}      # light blue line
+  hydrostatic_max: {label: "Hydrostatic, strong brine",                         color: "#7EC8F0", ls: "--", lw: 1.5}      # light blue dashed
+  hydrostatic_min: {label: "Hydrostatic, fresh water",                          color: "#7EC8F0", ls: ":",  lw: 1.6}      # light blue dotted
+  pp:      {label: "PP expected",                              color: "#E20337", ls: "-",  lw: 1.8}      # red line
+  pp_max:  {label: "PP max",                                   color: "#E20337", ls: "--", lw: 1.5}      # red dashed
+  pp_min:  {label: "PP min",                                   color: "#E20337", ls: ":",  lw: 1.6}      # red dotted
+# How each curve is defined (docs/pore_pressure.md section 14)
+definitions:
+  sh: "minimum horizontal stress with the central Poisson's ratio: nu/(1-nu)(OBG - PP) + PP"
+  sh_min: "the same with the lowest Poisson's ratio of the band"
+  fg: "most likely fracture pressure, the mean of the lower bound (Sh) and the upper bound (2 Sh - PP), central Poisson's ratio"
+  fg_min: "the most likely fracture pressure with the lowest Poisson's ratio of the band"
+  fg_max: "the most likely fracture pressure with the highest Poisson's ratio of the band"
+  sfg: "shear failure (collapse) gradient: needs rock strength and the stresses; not held, so never drawn from a guess"
+  obg: "overburden gradient from the modelled compaction trend (or a density log when held)"
+  mw: "mud weight, the surface density (RT basis)"
+  hydrostatic: "the water gradient of seawater (the normal-pressure reference); NOT an expected pore pressure"
+  hydrostatic_max: "the high end of the water gradient (a strong brine)"
+  hydrostatic_min: "the low end of the water gradient (fresh water)"
+  pp: "expected pore pressure: a PREDICTION away from hydrostatic (logs, basin model); not drawn until one exists"
+  pp_max: "the high end of the prediction"
+  pp_min: "the low end of the prediction"
