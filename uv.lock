@@ -111,7 +111,7 @@ wheels = [
 [[package]]
 name = "ep-fluids"
 version = "0.2.0"
-source = { git = "https://github.com/AdmcCarthy/ep-fluids?tag=v0.2.0#8a472c253c17a323e5198c3fd16cf48adb5c8088" }
+source = { git = "https://github.com/AdmcCarthy/ep-fluids#bc81b35e98a9eeabcb87370dd3aab7dd8fe81f84" }
 dependencies = [
     { name = "ep-physics-base" },
     { name = "numpy" },
@@ -123,7 +123,7 @@ dependencies = [
 [[package]]
 name = "ep-physics-base"
 version = "0.1.0"
-source = { git = "https://github.com/AdmcCarthy/ep-physics-base?tag=v0.1.0#6cd2fb78ca3a48d591d266f6f61bde5764679683" }
+source = { git = "https://github.com/AdmcCarthy/ep-physics-base#6cd2fb78ca3a48d591d266f6f61bde5764679683" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
@@ -157,8 +157,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "ep-fluids", git = "https://github.com/AdmcCarthy/ep-fluids?tag=v0.2.0" },
-    { name = "ep-physics-base", git = "https://github.com/AdmcCarthy/ep-physics-base?tag=v0.1.0" },
+    { name = "ep-fluids", git = "https://github.com/AdmcCarthy/ep-fluids" },
+    { name = "ep-physics-base", git = "https://github.com/AdmcCarthy/ep-physics-base" },
     { name = "matplotlib", marker = "extra == 'plots'" },
     { name = "numpy" },
     { name = "pandas" },
