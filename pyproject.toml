@@ -20,8 +20,8 @@ dependencies = [
 plots = ["matplotlib"]
 
 [tool.uv.sources]
-ep-physics-base = { git = "https://github.com/AdmcCarthy/ep-physics-base", tag = "v0.1.0" }
-ep-fluids = { git = "https://github.com/AdmcCarthy/ep-fluids", tag = "v0.2.0" }
+ep-physics-base = { git = "https://github.com/AdmcCarthy/ep-physics-base" }
+ep-fluids = { git = "https://github.com/AdmcCarthy/ep-fluids" }
 
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
