@@ -1,6 +1,6 @@
 # ep-pressure-pvt-fluids: what the pores push back with and what fills them
 
-Pore pressure, pressure regimes, the drilling window and their figures; PVT classification, equations of state, column grading, fluid gradients and measurement types; and the pages and charts that need both (the PVT dashboards, the HPHT pressure-temperature chart). One library because a pressure in a reservoir cannot be read without the fluid in it, and a fluid cannot be placed without its pressure.
+Pore pressure, pressure regimes, the drilling window and their figures; geochemistry screening (FIS, Rock-Eval); PVT classification, equations of state, column grading, fluid gradients and measurement types; and the pages and charts that need both (the PVT dashboards, the HPHT pressure-temperature chart). One library because a pressure in a reservoir cannot be read without the fluid in it, and a fluid cannot be placed without its pressure.
 
 **Status: private, built public-ready.** The library follows the rules of a public one (no host-repository imports, no data, no private paths, an automated publication gate in `scripts/publication_gate.py`) and is published only when that gate passes. Licence: MIT with acknowledgement (`LICENSE`).
 
@@ -30,6 +30,7 @@ Package `ep_pressure_pvt_fluids`.
 | `column_grading` | Compositional grading of a hydrocarbon column and the envelope of its pressure profile. |
 | `fluid_gradients` | In-situ gradients of gas, oil and formation water from the fluid and not from the area. |
 | `measurement_types` | Which kind of measurement a PVT data point comes from, classified from official records only, with the issues of each type. |
+| `geochemistry` | Fluid inclusion stratigraphy (FIS) anomalies against a campaign's own background, and Rock-Eval / TOC before and after solvent pre-extraction with contamination flags; screening results with assumed limits (`defaults/geochemistry.yaml`), never a fluid or source-rock statement. |
 | `plots.pressure_plots`, `plots.pp_style`, `plots.pretest_plots`, `plots.gauge_plots`, `plots.shoe_tests` | Pressure-depth figures, the pore pressure line style guide, pretest and permanent-gauge figures, leak-off test symbols. |
 | `plots.pvt_plots`, `plots.pvt_colours`, `plots.fluid_class_colours` | GLR, API, map and 3D surface figures of the PVT tests, with their colours and test-marker helpers. |
 | `plots.pt_chart` | Pressure against temperature with the HPHT classes. |

@@ -1,0 +1,6 @@
+# Screening thresholds of ep_pressure_pvt_fluids.geochemistry.  Every value is an ASSUMPTION (level: placeholder) until a reviewed source replaces it.
+anomaly_k: 3.0                  # FIS. A sample is anomalous above median + k robust standard deviations (MAD x 1.4826) of log10 of the species in its campaign. Basis: common outlier convention, not a published FIS rule.
+max_gap_m: 25.0                 # FIS. Anomalous samples further apart than this [m] do not form one interval.
+anomaly_species: [total, ch4, c2h6, co2, h2s, benzene, toluene]
+s1_removed_share: 0.9           # Rock-Eval. S1 falls by more than 90 % after solvent pre-extraction: the free hydrocarbons were extractable (mud or migrated oil), so the sample is flagged contaminated and kept.
+s2_min_for_tmax: 0.5            # Rock-Eval. Tmax is not read when S2 is below 0.5 mg HC/g rock (literature convention, not read here).

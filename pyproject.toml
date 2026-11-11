@@ -1,7 +1,7 @@
 [project]
 name = "ep-pressure-pvt-fluids"
-version = "0.3.0"
-description = "Pressure, PVT and fluids: pore pressure and regimes, the drilling window, buoyancy, compaction, PVT, equations of state, column grading, fluid gradients, measurement types, and their figures and dashboards"
+version = "0.4.0"
+description = "Pressure, PVT and fluids: pore pressure and regimes, the drilling window, buoyancy, compaction, PVT, equations of state, column grading, fluid gradients, measurement types, geochemistry screening, and their figures and dashboards"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [

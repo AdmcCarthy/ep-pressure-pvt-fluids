@@ -13,8 +13,9 @@
 * `pore_pressure.register_overlay` lets a host replace configured values without the library importing a knowledge store.
 * `ep-fluids` was merged in; it is archived and its content lives here (the earlier import names `ep_fluids` and `ep_pressure` are gone).
 
-## Scope not yet covered
-* Geochemistry (Rock-Eval, FIS screening, gas wetness) is not in this library; its engine code is a small Volve module (`ep-volve`). Adding it needs a source-independent form first.
+## Geochemistry (added 2026-11-11, version 0.4.0)
+* `geochemistry`: FIS anomalies and Rock-Eval before / after extraction, moved from the Volve pack (the pure part; the readers of the Volve workbooks and report tables stay in `ep-volve`). Adam: geochemistry is in the scope of this library, not in its name. Limits are placeholders in `defaults/geochemistry.yaml`.
+* Still to add when sources arrive: gas wetness and ratio plots, maturity (Tmax, vitrinite) conversions, biomarker ratios, TOC / HI classification. Each needs a reviewed source for its limits (the project never assigns a genetic class without one).
 
 ## Next steps
 * Add the knowledge identifiers used here to `KNOWLEDGE.md` and export the defaults from the knowledge store.
