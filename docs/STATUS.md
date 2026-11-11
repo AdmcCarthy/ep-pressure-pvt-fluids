@@ -1,6 +1,6 @@
 # Status of ep-pressure
 
-**State.** Cut out of the E&P data engine on the date of the first commit: 9 modules, 6 test files. The engine still holds the original code and remains the source of truth until it switches over to depend on this library.
+**State.** Cut out of the E&P data engine on the date of the first commit: 9 modules, 6 test files. The engine switched over on 2026-11-11: it depends on this library (its old module paths are aliases of the modules here), and this repository is the source of truth.
 
 ## Decisions (Adam, 2026-11-11)
 * Domain libraries, one per topic; this one is `ep-pressure`. Figures belong to their domain.
@@ -18,6 +18,9 @@
 * none: every `src` import was mapped.
 
 ## Next steps
-* Switch the engine to depend on this library (replace its module by a thin import).
 * Add the knowledge identifiers used here to `KNOWLEDGE.md` and export the defaults from the knowledge store.
 * Run `scripts/publication_gate.py` and clear the warnings before publishing.
+
+## Changes after the first cut (2026-11-11)
+* ep-fluids 0.2.0 / ep-pressure 0.2.0: the HPHT pressure-temperature chart (ep_pressure.plots.pt_chart) and the PVT dashboard pages (ep_pressure.plots.pvt_dashboard, pvt3d_dashboard) live in ep-pressure because they need both libraries; ep_fluids.plots.pvt_plots keeps the GLR, API, map and 3D surface figures with public marker helpers; ep-pressure has egister_overlay for a host's configuration overlay.
+
