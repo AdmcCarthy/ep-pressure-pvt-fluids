@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Pore pressure and pressure regimes, HPHT classes, buoyancy and column effects, free water level, compaction (back-stripping), and the figures and style rules of these: the pore-pressure line guide, shoe-test symbols, pretest and gauge plots.
+Pressure, PVT and fluids: pore pressure and regimes, the drilling window, buoyancy, compaction, PVT classification, equations of state, column grading, fluid gradients, measurement types, and their figures and dashboards (the pore-pressure line guide, shoe-test symbols, pretest and gauge plots, the PVT pages).
 Part of a family of subsurface modules (see `seismic_lib` and `stress_field`); cut out of the E&P data engine by `scripts/extract_library.py` of `ep_geoscience_analytics`.
 
 @../../shared/idiom/CORE.md

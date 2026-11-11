@@ -1,0 +1,97 @@
+# Compositional grading of a hydrocarbon column with equations of state (src/processing/eos_mixture.py, src/processing/column_grading.py, docs/column_models.md, notebook 23).
+# The traditional column is a LINEAR gradient from the apex to the free water level (density at the apex x g).  A real column changes composition, and so density and saturation pressure, with
+# depth: gravity pulls the heavy components down (isothermal gravity-chemical equilibrium), a temperature gradient and thermal diffusion work against it, convection reduces it.  Fluids that are
+# near critical grade strongly, black oils and lean gases hardly.  Everything here is configuration; nothing is a field composition (those come with the PVT reports).
+
+# Components: the n-alkanes of config/pvt3d.yaml (Poling, Prausnitz and O'Connell, to be verified against the edition in use); molar masses from standard atomic weights.  A real fluid has a C7+ or C10+
+# fraction that these n-alkanes only stand in for (n-decane is the heaviest): the example fluids are ILLUSTRATIVE, not data.
+components:
+  - {id: methane,  tc_k: 190.56, pc_bar: 45.99, omega: 0.011}
+  - {id: ethane,   tc_k: 305.32, pc_bar: 48.72, omega: 0.099}
+  - {id: propane,  tc_k: 369.83, pc_bar: 42.48, omega: 0.152}
+  - {id: n_butane, tc_k: 425.12, pc_bar: 37.96, omega: 0.200}
+  - {id: n_pentane, tc_k: 469.70, pc_bar: 33.70, omega: 0.251}
+  - {id: n_hexane, tc_k: 507.60, pc_bar: 30.25, omega: 0.301}
+  - {id: n_heptane, tc_k: 540.20, pc_bar: 27.40, omega: 0.350}
+  - {id: n_octane, tc_k: 568.70, pc_bar: 24.90, omega: 0.400}
+  - {id: n_decane, tc_k: 617.70, pc_bar: 21.10, omega: 0.492}
+  - {id: n_eicosane, tc_k: 768.0, pc_bar: 11.6, omega: 0.907}      # ASSUMPTION: typical n-C20 constants standing in for a heavy C20+ fraction (not from the pvt3d table); replace with the characterisation of a PVT report
+
+kij: {}                      # binary interaction parameters, 'methane-n_decane': 0.04 ... (a tuned PVT model replaces these when the PVT reports arrive); all zero here
+
+# Reservoir conditions and composition of ILLUSTRATIVE fluids (mole fractions in the order of the components above; ASSUMPTION: shaped to behave like the fluid class under the Peng-Robinson
+# equation with the n-alkane constants, saturation pressures at the stated temperature: bubble 239 bar volatile oil, 294 bar near critical (bubble = dew), dew 342 bar rich gas condensate,
+# bubble 82 bar black oil; not taken from a field).  `t_c`, `p_ref_bar` and `z_ref_m` are the temperature, pressure and TVD below MSL of the reference point of the column.  The HPHT
+# fluids are the volatile oil and the gas condensate at higher temperature and pressure (undersaturated by far): they show the EOS and volume-translation differences at HPHT.
+fluids:
+  lean_gas:
+    label: "lean dry gas"
+    composition: [0.92, 0.0132, 0.0095, 0.0076, 0.0057, 0.0076, 0.0114, 0.0132, 0.0114, 0.0005]
+    t_c: 100.0
+    p_ref_bar: 300.0
+    z_ref_m: 2800.0
+  rich_gas_condensate:
+    label: "rich gas condensate (dew 342 bar at 140 degC)"
+    composition: [0.84, 0.0233, 0.0167, 0.0133, 0.01, 0.0133, 0.02, 0.0233, 0.02, 0.02]
+    t_c: 140.0
+    p_ref_bar: 350.0
+    z_ref_m: 3500.0
+  near_critical:
+    label: "near-critical fluid (bubble = dew, 294 bar at 140 degC)"
+    composition: [0.77, 0.035, 0.025, 0.02, 0.015, 0.02, 0.03, 0.035, 0.03, 0.02]
+    t_c: 140.0
+    p_ref_bar: 300.0
+    z_ref_m: 3000.0
+  volatile_oil:
+    label: "volatile oil (bubble 239 bar at 140 degC)"
+    composition: [0.66, 0.0533, 0.0381, 0.0305, 0.0229, 0.0305, 0.0457, 0.0533, 0.0457, 0.02]
+    t_c: 140.0
+    p_ref_bar: 250.0
+    z_ref_m: 2500.0
+  black_oil:
+    label: "black oil (bubble 82 bar at 90 degC)"
+    composition: [0.25, 0.1083, 0.0774, 0.0619, 0.0464, 0.0619, 0.0929, 0.1083, 0.0929, 0.1]
+    t_c: 90.0
+    p_ref_bar: 300.0
+    z_ref_m: 2900.0
+  hpht_volatile_oil:
+    label: "HPHT volatile oil (190 degC, 850 bar)"
+    composition: [0.66, 0.0533, 0.0381, 0.0305, 0.0229, 0.0305, 0.0457, 0.0533, 0.0457, 0.02]
+    t_c: 190.0
+    p_ref_bar: 850.0
+    z_ref_m: 5400.0
+  hpht_gas_condensate:
+    label: "HPHT gas condensate (200 degC, 900 bar)"
+    composition: [0.84, 0.0233, 0.0167, 0.0133, 0.01, 0.0133, 0.02, 0.0233, 0.02, 0.02]
+    t_c: 200.0
+    p_ref_bar: 900.0
+    z_ref_m: 5600.0
+grid:
+  step_m: 5.0                 # depth step of the integration
+  max_iter: 40
+  tol: 1.0e-9
+
+# Temperature: isothermal (T of the reference point everywhere) or a geothermal gradient (T rises with depth).  A gradient WITHOUT a thermal diffusion term is an approximation (the gravity term is
+# evaluated at the local temperature); thermal diffusion models (Haase, Kempers, Firoozabadi-Ghorayeb) need heats of transport that are rarely known.
+temperature:
+  geothermal_gradient_c_km: 30.0      # the central value of config/pressure.yaml (geothermal gradient)
+  gradient_range_c_km: [20.0, 40.0]
+
+# Ensembles for the RANGE of a column (envelopes): the equation, the volume translation, the temperature mode and a relative composition uncertainty.
+ensemble:
+  eos: [PR, SRK]
+  volume_shift: [true, false]
+  temperature_modes: [isothermal, geothermal]
+  composition_sigma: 0.03             # ASSUMPTION: log-normal relative uncertainty of every mole fraction but the lightest (renormalised)
+  n_composition_draws: 6
+  seed: 20261105
+  column_heights_m: [50, 100, 200, 300, 400, 600]
+
+# Which approach is valid for which fluid and setting.  Provenance: each line names its source; sources marked (not read) are web search results only (knowledge/sources.yaml status cited_not_reviewed).
+validity:
+  - {approach: "linear gradient, apex to FWL", fluids: "black oil, lean gas, short columns", status: "valid when the density changes little over the column (a few tens of metres, or a fluid far from critical)", source: "this repo, tested in tests/test_column_grading.py"}
+  - {approach: "isothermal gravity-chemical equilibrium with a cubic EOS (PR or SRK) and volume translation", fluids: "volatile oil, gas condensate, near-critical fluids", status: "the standard method; gives the MAXIMUM gradient; strong and uncertain near the critical point; the EOS must be tuned to the PVT report", source: "Hoier and Whitson (SPE 63085, 2000) slides, Kabir and Pop (SPE 99386, 2006) abstract; (not read: the SPE paper)"}
+  - {approach: "non-isothermal with thermal diffusion (Haase, Kempers, Belery-da Silva, Shukla-Firoozabadi, Ghorayeb-Firoozabadi)", fluids: "any; matters for near-critical and strongly graded fluids", status: "a temperature gradient reduces, can enhance, balance or remove the gravity effect; results lie between the isothermal maximum and the no-gradient case of convection; the coefficients of thermal diffusion are hard to obtain", source: "Hoier and Whitson slides, SPE 28000 (Whitson and Belery 1994), search results (not read)"}
+  - {approach: "SRK / PR with volume translation (Peneloux)", fluids: "all liquid-like and dense fluids", status: "cubic equations give liquid volumes that are significantly less accurate than gas volumes; the translation corrects the liquid density and does not change phase equilibrium; essential for the pressure gradient of an oil column", source: "Wikipedia, Cubic equations of state (read 2026-11-04)"}
+  - {approach: "PC-SAFT", fluids: "liquids and dense fluids over wide temperature and pressure ranges (HPHT)", status: "better liquid densities and compressibilities over wide ranges in some studies, but less suited than a tuned cubic EOS for near-critical mixtures and gas condensates and needs parameter tuning; NOT implemented here (needs pure-component parameters and a characterisation)", source: "search results 2026-11-04 (not read): SPE ATCE 17 paper, Fluid Phase Equilibria 2017 gas-condensate PC-SAFT paper, comparisons of PC-SAFT with cubic EOS"}
+  - {approach: "convection and asphaltene segregation", fluids: "any; heavy oils, tilted or fractured columns", status: "convection tends to eliminate gradients; asphaltene segregation and near-spinodal fluids give grading that gravity-chemical equilibrium of the light components does not", source: "Kabir and Pop abstract, Hoier and Whitson slides (not read)"}

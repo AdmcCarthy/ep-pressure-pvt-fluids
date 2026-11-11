@@ -349,14 +349,14 @@ def well_contacts_tvdss(facts: pd.DataFrame, header: pd.DataFrame, lookup: pd.Da
 def _hc_gradients(fluid: str, info: dict[str, Any], cfg: dict[str, Any]) -> tuple[float, float, float, str]:
     """(central, low, high, basis) in-situ gradient [bar/m] of the hydrocarbon leg of a test, from its fluid (PVT class, stock-tank density, GLR, gas gravity, pressure and temperature), not from
     the area (`fluid_gradients.py`); the configured band is the fallback where the test has none of these."""
-    from ep_fluids import fluid_gradients as fg
+    from ep_pressure_pvt_fluids import fluid_gradients as fg
 
     return fg.hydrocarbon_gradients(fluid, info, cfg)
 
 
 def water_gradient_band(cfg: dict[str, Any]) -> tuple[float, float, float, str]:
     """(central, low, high, basis) of the water gradient: the hydrostatic gradient with the fresh-to-brine band (a salinity moves it; `fluid_gradients.water_gradient`)."""
-    from ep_fluids import fluid_gradients as fg
+    from ep_pressure_pvt_fluids import fluid_gradients as fg
 
     return fg.water_gradient(None, cfg)
 

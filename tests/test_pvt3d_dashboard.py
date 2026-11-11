@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ep_fluids import eos, pvt
+from ep_pressure_pvt_fluids import eos, pvt
 from ep_physics_base.config import load_yaml
 
-from ep_pressure.plots import pvt3d_dashboard as page3d  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pvt3d_dashboard as page3d  # noqa: E402
 
 CFG = pvt.load_config()
 CFG3D = load_yaml("config/pvt3d.yaml")

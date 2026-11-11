@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from ep_fluids import eos, pvt
-from ep_pressure import pressure as pr  # noqa: E402
-from ep_fluids.plots import pvt_colours as pc  # noqa: E402
-from ep_fluids.plots import pvt_plots as pp
-from ep_pressure.plots import pt_chart  # noqa: E402
+from ep_pressure_pvt_fluids import eos, pvt
+from ep_pressure_pvt_fluids import pressure as pr  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pvt_colours as pc  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pvt_plots as pp
+from ep_pressure_pvt_fluids.plots import pt_chart  # noqa: E402
 from ep_physics_base.config import load_yaml  # noqa: E402
 
 CFG = pvt.load_config()

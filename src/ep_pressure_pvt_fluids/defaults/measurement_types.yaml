@@ -1,0 +1,209 @@
+# Measurement types: what kind of measurement a fluid / pressure data point comes from, the symbol that shows it on every PVT chart, and the issues each type is prone to.
+# Details, the feasibility review and the patterns found: docs/measurement_types.md.  Code: src/processing/measurement_types.py (classification), src/utils/pvt_plots.py and
+# scripts/build_pvt_dashboard.py / build_pvt3d_dashboard.py (symbols).  Issues cite the expert knowledge store (knowledge/pvt.yaml, docs/knowledge.md).
+#
+# Principles
+#   * A type is only assigned from EVIDENCE in the data (the official Sodir records), with a confidence and the evidence text; never guessed.  What cannot be told is `other`
+#     (an X) or stays an honest `dst` (no sample-record information), never a confident-looking category.
+#   * Shape = measurement type; colour = whatever the chart is coloured by; hollow = estimated temperature (docs/temperature.md).  Hollow needs a fillable shape, so line-only
+#     shapes (cross, x) are used only for types that are not plotted as hollow today.
+#   * Issues are things that can make a measurement of this type unrepresentative.  They are shown, never corrected.  `measurable` says whether the open data allow a per-test
+#     indicator (a proxy is labelled as one).
+
+version: 1
+
+# How a Sodir oil-sample record (`well_oil_sample`, one record per sample taken in a test) is linked to a DST (`well_dst`) of the same wellbore.
+sample_link:
+  depth_tolerance_m: 5.0                       # ASSUMPTION: a sample interval within this distance of the DST interval (MD RT) counts as overlapping it
+  # Sodir `wellbore_oil_sample.test_type` -> measurement type of the SAMPLE.  Values seen on 2026-11-03: DST 746, MDT 294, RFT 10, PROD 9, FMT 5, MINI 5, FIT 2, MUD 1.
+  # Confirmed by Adam (2026-11-03): FIT = formation INTEGRITY test (a pressure test at the casing shoe, not a fluid sampling test: its 2 oil-sample records are kept as `other` and noted
+  # in DQ-093), MINI = mini drill-stem test, PROD = production test.
+  sodir_test_type:
+    DST: dst
+    MDT: wireline_tester
+    RFT: wireline_tester
+    FMT: wireline_tester
+    FIT: other                                 # formation integrity test: a pressure test, not a wireline fluid sample
+    PROD: production_test
+    MINI: mini_dst
+    MUD: other
+
+# Drawdown ratio = 1 - flowing / shut-in BOTTOM-HOLE pressure of the test (a PROXY for how hard the well was pulled, not the near-wellbore pressure).  Classes by upper edge.
+drawdown:
+  class_edges: [0.05, 0.20, 0.50]
+  class_labels: ["< 5 %", "5-20 %", "20-50 %", "> 50 %"]
+  max_flow_to_static: 1.02                     # flowing above static by more than this ratio is not a drawdown: not used (a wellhead / gauge mix-up)
+
+groups:
+  downhole_testing: "Downhole in-situ testing"
+  wireline: "Wireline formation testing and sampling"
+  surface: "Surface-based evaluation"
+  laboratory: "Laboratory (PVT report)"
+  derived: "Derived or assumed"
+
+# symbol = Plotly 2D marker, symbol_3d = Plotly scatter3d marker (a smaller set), marker = matplotlib marker, glyph = text character for HTML keys.
+# classifiable: "yes" | "partly" | "no" (quoted: an unquoted yes / no is a YAML boolean)  = can the open data tell this type per test / sample.   plotted_now: are there points of this type in well_dst_pvt today.
+types:
+  dst:
+    group: downhole_testing
+    label: "DST (no sample-record information)"
+    symbol: circle
+    symbol_3d: circle
+    marker: o
+    glyph: "●"
+    classifiable: "yes"
+    plotted_now: fallback
+    evidence: "A row of the official DST table (well_dst); used only when the oil-sample table is not available to check for a sample record."
+    issues: [cleanup_filtrate, rapid_drawdown, gor_basis_error, carry_over, commingled_coning, non_original_fluid, envelope_fit]
+  dst_sampled:
+    group: downhole_testing
+    label: "DST, fluid sample recorded"
+    symbol: circle
+    symbol_3d: circle
+    marker: o
+    glyph: "●"
+    classifiable: "yes"
+    plotted_now: true
+    evidence: "An official Sodir oil-sample record of test type DST for the same test number (high confidence) or whose interval overlaps the test interval (medium). Sodir does not say whether the sample is a separator, downhole or wellhead sample."
+    issues: [cleanup_filtrate, rapid_drawdown, gor_basis_error, carry_over, commingled_coning, non_original_fluid, envelope_fit]
+  dst_unsampled:
+    group: downhole_testing
+    label: "DST, no sample record found"
+    symbol: square
+    symbol_3d: square
+    marker: s
+    glyph: "■"
+    classifiable: "partly"
+    plotted_now: true
+    evidence: "A DST with no oil-sample record for that test (the well may have records for other tests or none). Absence of a record is not proof that no sample was taken: medium confidence."
+    issues: [cleanup_filtrate, rapid_drawdown, gor_basis_error, carry_over, commingled_coning, non_original_fluid, envelope_fit]
+  mini_dst:
+    group: downhole_testing
+    label: "Mini-DST"
+    symbol: cross
+    symbol_3d: cross
+    marker: P
+    glyph: "✚"
+    classifiable: "partly"
+    plotted_now: false
+    evidence: "Only through an oil-sample record of test type MINI (5 records in 2 wells); the DST table does not mark a mini test."
+    issues: [cleanup_filtrate, rapid_drawdown, gor_basis_error, non_original_fluid, envelope_fit]
+  production_test:
+    group: downhole_testing
+    label: "Production / extended well test"
+    symbol: pentagon
+    symbol_3d: square-open
+    marker: p
+    glyph: "⬟"
+    classifiable: "partly"
+    plotted_now: false
+    evidence: "Only through an oil-sample record of test type PROD (9 records in 9 wells); the history text names production tests for about 7 % of wells but not per test."
+    issues: [gor_basis_error, carry_over, commingled_coning, non_original_fluid, envelope_fit]
+  wireline_tester:
+    group: wireline
+    label: "Wireline formation tester (MDT / RFT / FMT)"
+    symbol: hexagon
+    symbol_3d: diamond-open
+    marker: h
+    glyph: "⬢"
+    classifiable: "yes"
+    plotted_now: false
+    evidence: "Oil-sample records of test type MDT (294), RFT (10) and FMT (5): the sample is classified, but the record carries no GLR or pressure, so it cannot be a point in the GLR-pressure chart (it is shown on the map). A lab PVT report of such a sample would be a point."
+    issues: [wireline_contamination, non_original_fluid, envelope_fit]
+  downhole_sampler:
+    group: downhole_testing
+    label: "Downhole (bottom-hole) sampler"
+    symbol: triangle-up
+    symbol_3d: circle-open
+    marker: "^"
+    glyph: "▲"
+    classifiable: "no"
+    plotted_now: false
+    evidence: "Not distinguishable in the open data (about 0.5 % of the well histories mention a bottom-hole sample); would come from the sample_type of a PVT report."
+    issues: [downhole_sampler, non_original_fluid, envelope_fit]
+  surface_separator_sample:
+    group: surface
+    label: "Surface separator sample (recombined)"
+    symbol: triangle-down
+    symbol_3d: circle-open
+    marker: v
+    glyph: "▼"
+    classifiable: "no"
+    plotted_now: false
+    evidence: "Not distinguishable in the open data: the DST gas and oil rates are measured at a surface separator, but Sodir does not say whether a separator sample was taken (the oil-sample record does not state it). Would come from the sample_type of a PVT report."
+    issues: [gor_basis_error, carry_over, non_original_fluid, envelope_fit]
+  pvt_report:
+    group: laboratory
+    label: "PVT report (stated saturation pressure)"
+    symbol: diamond
+    symbol_3d: diamond
+    marker: D
+    glyph: "◆"
+    classifiable: "yes"
+    plotted_now: false                          # becomes true when the pvt_report sheet of the data-gap workbook is filled and matched (docs/enrichment.md)
+    evidence: "The saturation state comes from a stated bubble / dew point of a matched manual PVT-report row (saturation_basis = pvt_report); the GLR and pressure are still the DST's."
+    issues: [lab_accuracy, gor_basis_error, non_original_fluid]
+  other:
+    group: derived
+    label: "Type not determined"
+    symbol: x
+    symbol_3d: x
+    marker: X
+    glyph: "✖"
+    classifiable: "no"
+    plotted_now: false
+    evidence: "No evidence of the measurement type in the data."
+    issues: []
+
+# Issues: what can make a measurement unrepresentative.  `knowledge` = entries of knowledge/pvt.yaml (citations); `measurable` = what the open data allow.
+issues:
+  cleanup_filtrate:
+    label: "Incomplete well clean-up, mud-filtrate or completion-fluid contamination"
+    effect: "the produced fluid is not the reservoir fluid: GLR, density and API are biased; the test can fall in the forbidden domain"
+    knowledge: [mt-cleanup-and-filtrate, mt-adam-dst-forbidden-causes]
+    measurable: "no: the DST table has no clean-up period, BS&W or test duration (listed, not measured)"
+  rapid_drawdown:
+    label: "Rapid drawdown: transient pressure drop in the near-wellbore environment"
+    effect: "pressure below the saturation pressure near the well creates two-phase flow or a condensate bank; the produced GLR no longer matches the reservoir fluid"
+    knowledge: [mt-drawdown-two-phase, mt-adam-dst-forbidden-causes]
+    measurable: "proxy: drawdown ratio from shut-in and flowing bottom-hole pressure, for the tests that report both"
+  gor_basis_error:
+    label: "Producing GOR error and unstated rate basis"
+    effect: "the GLR axis is off by a factor: typically +-5 %, worst case +-25 %; separator against stock-tank basis is not stated"
+    knowledge: [mw98-gor-error-bounds, mw98-gor-basis-error]
+    measurable: "yes, as a distance: forbidden_glr_factor and forbidden_resolution for forbidden tests"
+  carry_over:
+    label: "Liquid carry-over or gas carry-under at the separator"
+    effect: "apparent GLR rises with flow rate at high rates (or falls with foaming oil)"
+    knowledge: [mw98-carry-over]
+    measurable: "no: needs several rates per interval (not checked)"
+  commingled_coning:
+    label: "Commingled intervals and coning near contacts"
+    effect: "a mixed fluid: an apparent forbidden or diphasic reading"
+    knowledge: [mt-commingled-and-coning]
+    measurable: "proxy: test interval length (base - top)"
+  wireline_contamination:
+    label: "Mud-filtrate / oil-based-mud contamination and small purge volumes of formation-tester samples"
+    effect: "PVT-quality samples are often not obtained; base oil can be almost impossible to identify in the sample"
+    knowledge: [mt-formation-tester-contamination]
+    measurable: "no: Sodir records the sample, not its contamination"
+  downhole_sampler:
+    label: "Two-phase or segregated fluid at the sampler, mechanical failure, water or mud in the sample"
+    effect: "a sample that is not the single-phase reservoir fluid"
+    knowledge: [mt-downhole-sampler-problems]
+    measurable: "no"
+  lab_accuracy:
+    label: "Laboratory accuracy of the stated saturation pressure"
+    effect: "a stated bubble / dew point is a measurement with an error band (recombination up to +-5 % on top of the field GOR error)"
+    knowledge: [mw98-laboratory-accuracy, mw98-sample-type]
+    measurable: "no: needs an uncertainty column in the pvt_report sheet"
+  non_original_fluid:
+    label: "Fluid no longer original: depletion, injection, cooling"
+    effect: "after production the fluid composition changes; seawater injection can cool the reservoir by about 5-8 degC (North Sea)"
+    knowledge: [mw98-sample-early, fr-sampling-and-conditioning, fr-injection-cools-reservoir]
+    measurable: "partly: the test date against the start of production or injection of the field (not built)"
+  envelope_fit:
+    label: "The saturation envelope is a correlation fitted to other fluids"
+    effect: "the forbidden / diphasic reading depends on the envelope (Glaso for North Sea oils, a configured dew-point curve); volatile oils near the critical point fit worst"
+    knowledge: [fr-correlations-fit-their-data, gl80-data-basis-and-accuracy, gl80-volatile-oil-exponent]
+    measurable: "yes, as a sensitivity: the state under the other correlation (notebook 13, section 4e)"

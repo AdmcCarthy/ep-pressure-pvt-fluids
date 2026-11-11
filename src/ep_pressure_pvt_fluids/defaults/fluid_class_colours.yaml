@@ -1,0 +1,21 @@
+# Fluid-class colours for charts that COMPARE fluid types (black oil, volatile oil, near-critical, gas condensate, wet gas, dry gas).  Adam, 2026-11-04: the Geostandard oil green and gas red are
+# right for "oil" and "gas" but not for telling six fluid classes apart in one figure (every line was green or red).  This is a CONTINUUM that starts and ends on the Geostandard colours:
+# oils in greens (dark to lime), the transition amber, the condensates in brown and orange-red, dry gas on the Geostandard gas red.  Neighbours differ in hue AND lightness, and the HPHT variant
+# of a class is drawn with a dashed line (not a new colour).  Used by notebooks 22 and 23; `hc_colours.yaml` stays the colour of plain oil / gas / condensate everywhere else.
+classes:
+  - {name: black oil,      colour: "#1B6E20", note: "dark green: the heavy, gas-poor end of the oils"}
+  - {name: volatile oil,   colour: "#5E9410", note: "lime green: still oil, much more dissolved gas"}
+  - {name: near-critical,  colour: "#B87F00", note: "amber: the transition between oil and gas (Geostandard shows oil and gas shows are amber-brown)"}
+  - {name: gas condensate, colour: "#A8470A", note: "brown: Geostandard proven oil and gas zones are brown (993300)"}
+  - {name: wet gas,        colour: "#EE4A1C", note: "orange-red"}
+  - {name: dry gas,        colour: "#FF0000", note: "Geostandard gas red"}
+# The example fluids of config/column_models.yaml and the HPHT variants (same colour, dashed).
+fluid_keys:
+  black_oil:           {class: black oil, dashed: false}
+  volatile_oil:        {class: volatile oil, dashed: false}
+  near_critical:       {class: near-critical, dashed: false}
+  rich_gas_condensate: {class: gas condensate, dashed: false}
+  lean_gas:            {class: dry gas, dashed: false}
+  hpht_volatile_oil:   {class: volatile oil, dashed: true}
+  hpht_gas_condensate: {class: gas condensate, dashed: true}
+min_delta_e: 20.0

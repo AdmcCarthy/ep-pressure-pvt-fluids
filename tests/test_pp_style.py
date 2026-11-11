@@ -9,10 +9,10 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt  # noqa: E402
 
-from ep_pressure import pore_pressure as pp  # noqa: E402
-from ep_pressure import pressure as pr  # noqa: E402
-from ep_pressure.plots import pp_style as ps  # noqa: E402
-from ep_pressure.plots import pressure_plots as ppl  # noqa: E402
+from ep_pressure_pvt_fluids import pore_pressure as pp  # noqa: E402
+from ep_pressure_pvt_fluids import pressure as pr  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pp_style as ps  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pressure_plots as ppl  # noqa: E402
 
 GREEN, BLUE, RED, PURPLE, LIGHT = "#2E9D3E", "#12408C", "#E20337", "#7B3FA0", "#7EC8F0"
 

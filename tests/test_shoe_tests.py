@@ -1,4 +1,4 @@
-from ep_pressure.plots.shoe_tests import norm_type, scatter_tests, legend_handles
+from ep_pressure_pvt_fluids.plots.shoe_tests import norm_type, scatter_tests, legend_handles
 
 
 def test_types_are_normalised():

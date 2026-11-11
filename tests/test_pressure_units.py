@@ -8,9 +8,9 @@ import pandas as pd
 
 matplotlib.use("Agg")
 
-from ep_pressure import pressure as pr  # noqa: E402
+from ep_pressure_pvt_fluids import pressure as pr  # noqa: E402
 from ep_physics_base import units as pu  # noqa: E402
-from ep_pressure.plots import pressure_plots as pp  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pressure_plots as pp  # noqa: E402
 
 
 def test_pressure_and_sg_round_trip_and_the_unit_of_one_sg():

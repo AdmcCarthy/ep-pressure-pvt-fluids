@@ -1,0 +1,39 @@
+# 3D pressure - volume - temperature surface of a model fluid (src/processing/eos.py, scripts/build_pvt3d_dashboard.py, docs/pvt3d.md).
+# The surface is that of a PURE component with the Peng-Robinson equation of state: the physical shape (liquid, vapour, two-phase dome with its Maxwell plateau,
+# critical point, supercritical region) comes from the equation, not from a drawing.  A real reservoir fluid is a MIXTURE whose phase envelope is a loop in the
+# pressure-temperature plane (bubble and dew branches, cricondentherm, cricondenbar), and its composition is not in the Sodir data: the surface shows what regime a
+# pure fluid with the chosen critical point would be in at the conditions of each test.  Everything below is configuration.
+
+# Critical constants and acentric factors: Poling, Prausnitz and O'Connell, The Properties of Gases and Liquids (to be verified against the edition in use).
+# `role` is an ASSUMPTION: which kind of reservoir fluid the component stands in for (an oil reservoir is colder than the critical temperature of its fluid, a gas
+# reservoir hotter, McCain / Ahmed; the heavier the component, the higher its critical temperature).
+fluids:
+  - {id: methane,   name: "Methane (C1)",     tc_k: 190.56, pc_bar: 45.99, omega: 0.011, role: "dry gas"}
+  - {id: ethane,    name: "Ethane (C2)",      tc_k: 305.32, pc_bar: 48.72, omega: 0.099, role: "wet gas"}
+  - {id: propane,   name: "Propane (C3)",     tc_k: 369.83, pc_bar: 42.48, omega: 0.152, role: "rich gas / condensate"}
+  - {id: n_butane,  name: "n-Butane (C4)",    tc_k: 425.12, pc_bar: 37.96, omega: 0.200, role: "volatile oil / rich condensate"}
+  - {id: n_pentane, name: "n-Pentane (C5)",   tc_k: 469.70, pc_bar: 33.70, omega: 0.251, role: "volatile oil"}
+  - {id: n_hexane,  name: "n-Hexane (C6)",    tc_k: 507.60, pc_bar: 30.25, omega: 0.301, role: "light oil"}
+  - {id: n_heptane, name: "n-Heptane (C7)",   tc_k: 540.20, pc_bar: 27.40, omega: 0.350, role: "oil"}
+  - {id: n_octane,  name: "n-Octane (C8)",    tc_k: 568.70, pc_bar: 24.90, omega: 0.400, role: "oil"}
+  - {id: n_decane,  name: "n-Decane (C10)",   tc_k: 617.70, pc_bar: 21.10, omega: 0.492, role: "black oil"}
+default_fluid: n_butane              # critical temperature 152 degC: within the range of the reservoir temperatures, so the data straddle the critical isotherm
+
+grid:                                # points of the surface (the same count on every isotherm, so it is one regular mesh)
+  n_temperature: 44
+  n_liquid: 34                       # on the liquid branch of an isotherm, from p_max down to the saturation pressure
+  n_plateau: 10                      # on the two-phase plateau (Maxwell construction), from the liquid to the vapour volume
+  n_vapour: 40                       # on the vapour branch, from the saturation pressure down to `vapour_floor` of it
+  p_max_bar: 1200.0                  # as the pressure axis of the GLR chart
+  vapour_floor: 0.03                 # the lowest pressure of an isotherm = this fraction of the saturation pressure (or of the critical pressure above it)
+  t_low_k: 270.0                     # lower temperature of the grid: min(0.6 Tc, this)
+  t_high_k: 520.0                    # upper temperature of the grid: max(1.3 Tc, this)
+  t_cap_k: 700.0                     # ... but never above this (the heavy components would stretch the axis far beyond the reservoir temperatures)
+
+# Regimes of a point (a test) on the surface of the model fluid
+regimes: [liquid, vapour, supercritical, two-phase]
+two_phase_tolerance: 0.002          # |P / Psat - 1| below this: on the saturation line (two-phase)
+
+# Flat pastel colours of the surface regions (the page blends them across the boundaries), the same family as the GLR chart:
+# liquid = undersaturated oil, vapour = undersaturated gas, two-phase = forbidden domain, supercritical / critical = the critical-fluid colour.
+colours: {liquid: "#CFE8C6", vapour: "#F7CBC3", two-phase: "#E4E8EB", supercritical: "#FBF0B4"}

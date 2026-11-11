@@ -1,6 +1,6 @@
 """The pressure-temperature chart of the drill stem tests with the HPHT classes (normal, high temperature, high pressure, HPHT, ultra-HPHT, extreme HPHT).
 
-It needs the pressure library (the class limits and their polygons) and the PVT colours and test markers of ep-fluids, so it lives here and not in ep-fluids.
+It needs the pressure library (the class limits and their polygons) and the PVT colours and test markers of ep-pressure-pvt-fluids, so it lives here and not in ep-pressure-pvt-fluids.
 A hollow marker is a test whose temperature is estimated; the HPHT class itself uses gauge temperatures only (docs/temperature.md in the engine)."""
 
 from __future__ import annotations
@@ -10,10 +10,10 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ep_fluids.plots import pvt_colours as pc
-from ep_fluids.plots.pvt_plots import estimated_mask, scatter_tests, types_of
+from ep_pressure_pvt_fluids.plots import pvt_colours as pc
+from ep_pressure_pvt_fluids.plots.pvt_plots import estimated_mask, scatter_tests, types_of
 from ep_physics_base.figures import theme
-from ep_pressure import pressure as pr
+from ep_pressure_pvt_fluids import pressure as pr
 
 
 def plot_pt_chart(ax: Any, pv: pd.DataFrame, pcfg: dict[str, Any], t_max: float = 260.0, p_max: float = 1500.0, legend: bool = False) -> None:

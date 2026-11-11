@@ -16,10 +16,10 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ep_pressure import pressure as pr
+from ep_pressure_pvt_fluids import pressure as pr
 from ep_physics_base import units as pu
-from ep_fluids.plots import fluid_class_colours as fcc
-from ep_pressure.plots import shoe_tests as st
+from ep_pressure_pvt_fluids.plots import fluid_class_colours as fcc
+from ep_pressure_pvt_fluids.plots import shoe_tests as st
 from ep_physics_base.figures import theme
 from ep_physics_base.figures.hc_colours import hc_colour, hc_line_colour
 
@@ -353,7 +353,7 @@ def plot_fullwell(ax, well_id: int, pressure: pd.DataFrame, lot: pd.DataFrame, m
     """Equivalent density [sg] against TVD [m MSL] for the whole well.  Returns the drilling-window rows at the tested depths (for a table).
 
     The overburden, Poisson band, ESD and ECD bands are ASSUMPTIONS (config/pore_pressure.yaml) shown as bands; a quantity without data is not drawn."""
-    from ep_pressure import pore_pressure as pp
+    from ep_pressure_pvt_fluids import pore_pressure as pp
 
     h = header[header["wellbore_id"] == well_id]
     ref = pr.well_depth_reference(h, cfg)
@@ -368,7 +368,7 @@ def plot_fullwell(ax, well_id: int, pressure: pd.DataFrame, lot: pd.DataFrame, m
     def emw(p, z):
         return pu.emw_sg(p, z, rt, datum)
 
-    from ep_pressure.plots import pp_style as ps
+    from ep_pressure_pvt_fluids.plots import pp_style as ps
 
     _, gw_lo_, gw_hi_, _ = pr.water_gradient_band(cfg)
     ps.plot_curve(ax, "hydrostatic", emw(gw * zz, zz), zz)                                  # hydrostatic reference (no pore pressure prediction exists, so it is not called expected)

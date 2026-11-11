@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ep_pressure import pore_pressure as pp
+from ep_pressure_pvt_fluids import pore_pressure as pp
 from ep_physics_base import units as pu
 from ep_physics_base.config import load_yaml
 

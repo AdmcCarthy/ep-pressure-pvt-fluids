@@ -14,14 +14,14 @@ from __future__ import annotations
 
 import pandas as pd
 
-from ep_fluids import eos
-from ep_fluids import pvt as pvt_mod
-from ep_fluids.plots.pvt_colours import REGIME_COLOURS
+from ep_pressure_pvt_fluids import eos
+from ep_pressure_pvt_fluids import pvt as pvt_mod
+from ep_pressure_pvt_fluids.plots.pvt_colours import REGIME_COLOURS
 from ep_physics_base.config import load_yaml
 from ep_physics_base.figures import hover_panel as hp  # noqa: F401
 from ep_physics_base.figures import theme
-from ep_pressure import pressure as pr  # noqa: F401
-from ep_pressure.plots import pvt_dashboard as base
+from ep_pressure_pvt_fluids import pressure as pr  # noqa: F401
+from ep_pressure_pvt_fluids.plots import pvt_dashboard as base
 
 PAGE = "pvt_3d.html"
 

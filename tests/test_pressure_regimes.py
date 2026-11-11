@@ -1,5 +1,5 @@
 import pandas as pd
-from ep_pressure.plots.pressure_plots import contact_regimes
+from ep_pressure_pvt_fluids.plots.pressure_plots import contact_regimes
 
 
 def _t(rows):

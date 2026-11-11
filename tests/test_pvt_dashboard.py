@@ -9,9 +9,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ep_fluids import pvt
+from ep_pressure_pvt_fluids import pvt
 
-from ep_pressure.plots import pvt_dashboard as dash  # noqa: E402
+from ep_pressure_pvt_fluids.plots import pvt_dashboard as dash  # noqa: E402
 
 CFG = pvt.load_config()
 

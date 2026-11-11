@@ -21,12 +21,12 @@ from typing import Any
 
 import pandas as pd
 
-from ep_fluids import measurement_types as mtypes
-from ep_fluids import pvt as pvt_mod
-from ep_fluids.plots.pvt_colours import API_COLOURS, BASIS_COLOURS, BRACKET_COLOURS, FLUID_COLOURS, GREY, PT_COLOURS, PT_LABELS, STATE_COLOURS, YELLOW, ZONE_COLOURS  # noqa: F401
+from ep_pressure_pvt_fluids import measurement_types as mtypes
+from ep_pressure_pvt_fluids import pvt as pvt_mod
+from ep_pressure_pvt_fluids.plots.pvt_colours import API_COLOURS, BASIS_COLOURS, BRACKET_COLOURS, FLUID_COLOURS, GREY, PT_COLOURS, PT_LABELS, STATE_COLOURS, YELLOW, ZONE_COLOURS  # noqa: F401
 from ep_physics_base.figures import hover_panel as hp
 from ep_physics_base.figures import theme
-from ep_pressure import pressure as pr
+from ep_pressure_pvt_fluids import pressure as pr
 
 OUT_DIR = "reports/dashboards"
 PAGE = "pvt_glr_pressure.html"

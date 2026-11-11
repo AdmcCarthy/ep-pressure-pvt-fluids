@@ -41,7 +41,7 @@ def fracture_curves(obg_bar, pp_bar, nu_band) -> dict[str, Any]:
     """Pressure [bar] of the Sh and FG family for the Poisson band (low, central, high), from the Zhang bounds (src/processing/pore_pressure.py)."""
     import numpy as np
 
-    from ep_pressure import pore_pressure as pp
+    from ep_pressure_pvt_fluids import pore_pressure as pp
 
     obg, p = np.asarray(obg_bar, dtype=float), np.asarray(pp_bar, dtype=float)
     lo, mid, hi = (float(x) for x in nu_band)

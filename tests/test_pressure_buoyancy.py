@@ -4,8 +4,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from ep_pressure import pressure as pr
-from ep_pressure import pressure_gradients as pg
+from ep_pressure_pvt_fluids import pressure as pr
+from ep_pressure_pvt_fluids import pressure_gradients as pg
 
 CFG = pr.load_config()
 GW = CFG["hydrostatic"]["gradient_bar_per_m"]
@@ -58,7 +58,7 @@ def test_no_contact_below_the_test_is_not_guessed_and_is_flagged():
 
 
 def test_gradients_follow_the_fluid_not_the_area():
-    from ep_fluids import fluid_gradients as fg
+    from ep_pressure_pvt_fluids import fluid_gradients as fg
 
     c, low, high, basis = fg.gas_gradient(300.0, 100.0, 0.70, CFG)
     assert 0.019 < c < 0.025 and low < c < high and "real-gas" in basis                                 # rho = p M / (Z R T): about 0.22 g/cm3 for a 0.7 gas at 300 bar and 100 degC
@@ -71,7 +71,7 @@ def test_gradients_follow_the_fluid_not_the_area():
 
 
 def test_water_gradient_depends_on_salinity():
-    from ep_fluids import fluid_gradients as fg
+    from ep_pressure_pvt_fluids import fluid_gradients as fg
 
     fresh, brine = fg.water_gradient(0.0, CFG)[0], fg.water_gradient(88000.0, CFG)[0]
     assert abs(fresh - 0.0980) < 1e-9 and abs(brine - 0.1052) < 1e-9 and fg.water_gradient(55000.0, CFG)[0] == 0.1018
