@@ -195,7 +195,7 @@ def build_well_dst_pressure(dst: pd.DataFrame, header: pd.DataFrame, cfg: dict[s
         extra["top_md_m"] = extra["base_md_m"] = extra["mid_md_m"]
         t = pd.concat([t, extra.reindex(columns=t.columns.union(extra.columns, sort=False))], ignore_index=True)
     t["wellbore_id"] = t["wellbore_id"].astype("Int64")
-    t["mid_md_m"] = ((t["top_md_m"].astype("float64") + t["base_md_m"].astype("float64")) / 2).where(t["top_md_m"].notna() & t["base_md_m"].notna(), t.get("mid_md_m"))
+    t["mid_md_m"] = ((t["top_md_m"].astype("float64") + t["base_md_m"].astype("float64")) / 2).where(t["top_md_m"].notna() & t["base_md_m"].notna(), pd.to_numeric(t.get("mid_md_m"), errors="coerce")).astype("float64")
     ref = well_depth_reference(header, cfg)
     t = t.merge(ref, on="wellbore_id", how="left")
     t["area"] = t["main_area"].astype("string")
