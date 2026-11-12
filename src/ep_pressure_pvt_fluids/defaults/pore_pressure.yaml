@@ -29,3 +29,7 @@ mud:
   esd_minus_mud_weight_sg: [-0.03, 0.02]         # ASSUMPTION: ESD against the surface mud weight (thermal expansion lowers it, compressibility raises it)
   annular_loss_sg: [0.02, 0.08]                  # ASSUMPTION: ECD minus ESD, a typical range for a deep section (flow rate, hole geometry and rheology fix it)
   window_margin_sg: 0.05                         # ASSUMPTION: a drilling window narrower than this is reported as narrow
+
+# Pore pressure as a share of the overburden stress (Zhang, pp. 3-4; knowledge entry zh-effective-stress): from hydrostatic up to about 95 % of the overburden stress.  A share above the limit is a finding about the pressure, the depth or the modelled overburden.
+overburden_share:
+  upper_limit: 0.95

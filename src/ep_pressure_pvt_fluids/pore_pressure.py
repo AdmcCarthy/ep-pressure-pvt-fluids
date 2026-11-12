@@ -105,3 +105,64 @@ def drilling_window(pp_sg, sfg_sg, fg_sg, margin_sg: float = 0.05) -> pd.DataFra
 def overbalance(mud_weight_sg, pp_sg):
     """Mud weight minus pore pressure [sg]: positive = overbalanced (the mud holds the formation), negative = underbalanced."""
     return np.asarray(mud_weight_sg, dtype=float) - np.asarray(pp_sg, dtype=float)
+
+
+def fracture_band_for_shoes(lot: pd.DataFrame, header: pd.DataFrame, cfg: dict[str, Any], hydrostatic_bar_per_m: float, tolerance: float = 0.03, min_below_seabed_m: float = 50.0) -> pd.DataFrame:
+    """Every shoe test with an equivalent mud density against the screening band of the fracture pressure (Zhang, pp. 6-8: lower bound = minimum stress, upper bound = 2 x minimum stress - pore pressure).
+
+    The band comes from the MODELLED overburden (`overburden_pressure_bar`, a compaction trend, not a density log), a HYDROSTATIC pore pressure and the Poisson's ratio BAND of the configuration, so it is
+    a screening band and the position of the test in it is a finding, never a correction of the test.  The shoe depth is the measured depth less the rotary table, used as the vertical depth below
+    sea level (`depth_basis = md_as_tvd`): a deviated well makes the true vertical depth smaller, so the band is then too deep.  An integrity test (FIT) is a lower bound: below the band is expected.
+
+    Columns: the test, `z_msl_m`, `overburden_bar`, `pore_bar`, `band_low_bar`, `band_high_bar`, `test_pressure_bar`, `band_position` (below | inside | above | not_testable), `band_note`.
+    """
+    columns = ["wellbore_id", "well_name", "casing_depth_md_m", "test_type", "lot_emw_sg", "z_msl_m", "depth_basis", "overburden_bar", "pore_bar", "band_low_bar", "band_high_bar",
+               "test_pressure_bar", "band_position", "band_note"]
+    if lot is None or lot.empty or header is None or header.empty:
+        return pd.DataFrame(columns=columns)
+    h = header[["wellbore_id", "rt_elev_m", "water_depth_m"]].drop_duplicates("wellbore_id")
+    x = lot[lot["lot_emw_sg"].notna() & lot["casing_depth_md_m"].notna()].merge(h, on="wellbore_id", how="left").reset_index(drop=True)
+    md = pd.to_numeric(x["casing_depth_md_m"], errors="coerce").to_numpy(dtype="float64")
+    rt = pd.to_numeric(x["rt_elev_m"], errors="coerce").to_numpy(dtype="float64")
+    wd = pd.to_numeric(x["water_depth_m"], errors="coerce").to_numpy(dtype="float64")
+    emw = pd.to_numeric(x["lot_emw_sg"], errors="coerce").to_numpy(dtype="float64")
+    z = md - rt
+    testable = np.isfinite(z) & np.isfinite(wd) & np.isfinite(emw) & (z > wd + min_below_seabed_m)
+    obg = np.full(len(x), np.nan)
+    for i in np.flatnonzero(testable):
+        obg[i] = overburden_pressure_bar([z[i]], wd[i], cfg)[0]
+    pore = hydrostatic_bar_per_m * z
+    band = fracture_band_bar(obg, pore, cfg)
+    low = np.fmin(band["shmin_low_bar"].to_numpy(), band["shmin_high_bar"].to_numpy())
+    high = band["fg_upper_bar"].to_numpy()
+    p_test = np.asarray(pu.mud_pressure_bar(emw, z, rt), dtype="float64")
+    is_fit = x["test_type"].astype("string").fillna("").str.upper().str.startswith("FIT").to_numpy()
+    below, above = p_test < low * (1 - tolerance), p_test > high * (1 + tolerance)
+    position = np.select([~testable, above, below], ["not_testable", "above", "below"], "inside")
+    note = np.select([~testable, above, below & is_fit, below], ["no elevation or water depth, or the shoe is less than 50 m below the seabed", "above the upper fracture bound",
+                      "below the band, as expected for an integrity test (a lower bound)", "below the lowest minimum-stress estimate"], "inside the band")
+    out = x[["wellbore_id", "well_name", "casing_depth_md_m", "test_type", "lot_emw_sg"]].copy()
+    out["z_msl_m"], out["depth_basis"] = np.where(testable, z, np.nan), "md_as_tvd"
+    out["overburden_bar"], out["pore_bar"] = obg, np.where(testable, pore, np.nan)
+    out["band_low_bar"], out["band_high_bar"] = np.where(testable, low, np.nan), np.where(testable, high, np.nan)
+    out["test_pressure_bar"] = np.where(testable, p_test, np.nan)
+    out["band_position"], out["band_note"] = pd.array(position, dtype="string"), pd.array(note, dtype="string")
+    return out[columns]
+
+
+def overburden_share(pressure_bar, z_msl_m, water_depth_m, cfg: dict[str, Any]) -> pd.DataFrame:
+    """Pore or reservoir pressure as a share of the MODELLED overburden stress at its depth (Zhang, pp. 3-4: pore pressure runs from hydrostatic to about 95 % of the overburden stress).
+
+    Columns: `overburden_bar` and `overburden_share` (NaN where the depth or the water depth is missing), `above_upper_limit` (share above `overburden_share.upper_limit`: a physical limit, so a finding about the
+    pressure, the depth or the modelled overburden, never a correction).  The overburden is a compaction trend until density logs arrive, so the share is as uncertain as that trend.
+    """
+    p = np.atleast_1d(np.asarray(pressure_bar, dtype="float64"))
+    z = np.atleast_1d(np.asarray(z_msl_m, dtype="float64"))
+    wd = np.broadcast_to(np.atleast_1d(np.asarray(water_depth_m, dtype="float64")), p.shape)
+    ok = np.isfinite(p) & np.isfinite(z) & np.isfinite(wd) & (z > 0)
+    obg = np.full(p.shape, np.nan)
+    for i in np.flatnonzero(ok):
+        obg[i] = overburden_pressure_bar([z[i]], wd[i], cfg)[0]
+    share = p / obg
+    limit = float((cfg.get("overburden_share") or {}).get("upper_limit", 0.95))
+    return pd.DataFrame({"overburden_bar": obg, "overburden_share": share, "above_upper_limit": np.where(np.isfinite(share), share > limit, False)})

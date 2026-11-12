@@ -628,3 +628,32 @@ def build_play_pressure_summary(pressure: pd.DataFrame, well_play: pd.DataFrame,
         rows.append(row)
     out = pd.DataFrame(rows)
     return out, [dq_event(*ctx, "play_pressure_rows", len(out), "info", detail=f"{int(out['n_tests'].sum())} tests placed in {len(out)} plays")]
+
+
+def add_overburden_share(pressure: pd.DataFrame, well_header: pd.DataFrame, pp_cfg: dict[str, Any]) -> tuple[pd.DataFrame, list[dict]]:
+    """Add the reservoir pressure as a share of the MODELLED overburden stress at the depth of each test (Zhang, pp. 3-4: pore pressure runs up to about 95 % of the overburden stress).
+
+    Columns added: `overburden_bar`, `overburden_share`, `overburden_share_is_minimum` (the depth is a measured depth of a deviated or unsurveyed well, so the true vertical depth is smaller, the modelled
+    overburden at that depth is too large and the share is a MINIMUM) and `share_above_limit` (above `overburden_share.upper_limit`: a finding about the pressure, the depth or the modelled
+    overburden, never corrected).  The overburden is a compaction trend until density logs arrive.  Existing columns are not changed.
+    """
+    from ep_pressure_pvt_fluids import pore_pressure as pp
+
+    ctx = ("all", "well_dst_pressure")
+    if pressure.empty or "tvdss_m" not in pressure:
+        return pressure, []
+    wd = well_header.drop_duplicates("wellbore_id").set_index("wellbore_id")["water_depth_m"] if not well_header.empty else pd.Series(dtype="float64")
+    water = pd.to_numeric(pressure["wellbore_id"].map(wd), errors="coerce").to_numpy(dtype="float64")
+    share = pp.overburden_share(pd.to_numeric(pressure["reservoir_pressure_bar"], errors="coerce"), pd.to_numeric(pressure["tvdss_m"], errors="coerce"), water, pp_cfg)
+    out = pressure.copy()
+    out["overburden_bar"] = share["overburden_bar"].to_numpy()
+    out["overburden_share"] = share["overburden_share"].to_numpy()
+    out["overburden_share_is_minimum"] = pressure["depth_basis"].astype("string").isin(["md_deviated", "md_no_tvd"]).to_numpy() & out["overburden_share"].notna().to_numpy()
+    out["share_above_limit"] = share["above_upper_limit"].to_numpy()
+    n_over = int(out["share_above_limit"].sum())
+    events = [dq_event(*ctx, "overburden_share", int(out["overburden_share"].notna().sum()), "info",
+                       detail=f"{int(out['overburden_share'].notna().sum())} tests with a share of the modelled overburden; {n_over} above the upper limit (a finding about the pressure, the depth or the modelled overburden)")]
+    if n_over:
+        events.append(dq_event(*ctx, "overburden_share_above_limit", n_over, "warning", out.loc[out["share_above_limit"], "well_name"].dropna().unique()[:10],
+                               "share of the modelled overburden above the physical limit: kept, not corrected"))
+    return out, events
