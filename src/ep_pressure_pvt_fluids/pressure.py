@@ -181,7 +181,7 @@ def build_well_dst_pressure(dst: pd.DataFrame, header: pd.DataFrame, cfg: dict[s
     ctx = ("all", "well_dst_pressure")
     columns = ["wellbore_id", "well_name", "test_number", "pressure_source", "top_md_m", "base_md_m", "mid_md_m", "depth_used_m", "depth_basis", "depth_confidence", "depth_sigma_m", "tvdss_m",
                "reservoir_pressure_bar", "reservoir_pressure_basis", "pressure_confidence", "shut_in_bar", "shut_in_basis", "shut_in_basis_evidence", "shut_in_to_bhp_ratio",
-               "flow_pressure_bar", "bottom_hole_pressure_bar", "hydrostatic_bar", "hydrostatic_sigma_bar", "overpressure_bar", "pressure_ratio", "pore_emw_sg", "pressure_regime", "overpressure_is_minimum",
+               "flow_pressure_bar", "bottom_hole_pressure_bar", "hydrostatic_bar", "hydrostatic_sigma_bar", "overpressure_bar", "overpressure_sigma_bar", "pressure_ratio", "pressure_ratio_sigma", "pore_emw_sg", "pore_emw_sigma_sg", "sigma_basis", "pressure_regime", "overpressure_is_minimum",
                "temperature_c", "temperature_source", "geothermal_gradient_c_km", "pressure_class", "temperature_class", "hpht_class", "hp_ht_pattern", "fluid_hint", "rt_assumed", "pressure_screen", "rejected_pressure_bar", "area", "flow_basis", "siwhp_bar", "sibhp_bar", "fwhp_bar", "fbhp_bar", "bhp_kind", "static_bhp_confirmed",
                "pressure_definition_source", "underpressure_suspect_outside_area", "underpressure_unconfirmed_static", "flags"]
     if dst.empty:
@@ -271,6 +271,12 @@ def build_well_dst_pressure(dst: pd.DataFrame, header: pd.DataFrame, cfg: dict[s
     t["overpressure_bar"] = t["reservoir_pressure_bar"] - t["hydrostatic_bar"]
     t["pressure_ratio"] = t["reservoir_pressure_bar"] / t["hydrostatic_bar"]
     t["pore_emw_sg"] = t["reservoir_pressure_bar"] / (sg * t["depth_used_m"])        # on the same RT basis as a leak-off test (pressure / (g x TVD below RT))
+    # The uncertainty that follows from the depth only (the gauge accuracy and drift are not stated, so these are a LOWER BOUND of the whole): the overpressure moves with the hydrostatic pressure, the ratio and
+    # the equivalent density by the relative depth uncertainty.  Empty where no survey states one.
+    t["overpressure_sigma_bar"] = t["hydrostatic_sigma_bar"]
+    t["pressure_ratio_sigma"] = t["pressure_ratio"] * t["hydrostatic_sigma_bar"] / t["hydrostatic_bar"]
+    t["pore_emw_sigma_sg"] = t["pore_emw_sg"] * t["depth_sigma_m"] / t["depth_used_m"]
+    t["sigma_basis"] = pd.Series(np.where(t["depth_sigma_m"].notna(), "survey vertical uncertainty of the depth only; gauge accuracy not stated", "not stated"), index=t.index).astype("string")
     t["pressure_regime"] = classify_regime(t["pressure_ratio"], cfg)
     u = cfg["underpressure"]
     in_up = t["area"].str.upper().isin([a.upper() for a in u["areas"]]).fillna(False).to_numpy(dtype=bool)

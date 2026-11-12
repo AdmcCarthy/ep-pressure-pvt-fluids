@@ -259,6 +259,7 @@ def plot_triplet(axes, well_id: int, well_name: str, pressure: pd.DataFrame, con
         ls, col = CONTACT_STYLE.get(r.label, ("-", "#555555"))
         ax_a.text(0.995, r.tvdss_m, f"{r.label} {r.tvdss_m:.0f} m", transform=ax_a.get_yaxis_transform(), ha="right", va="bottom", fontsize=8.5, color=col)
     n_corr = 0
+    n_bars = 0
     c_lab: list = []
     reg = contact_regimes(t)
     n_multi = sum(1 for m, _ in reg.values() if m == "multi")
@@ -269,8 +270,14 @@ def plot_triplet(axes, well_id: int, well_name: str, pressure: pd.DataFrame, con
         fluid = "gas" if str(r.fluid_hint).startswith(("gas", "condensate")) else "oil" if str(r.fluid_hint).startswith("oil") else None
         cls = (classes or {}).get((r.wellbore_id, str(r.test_number)))
         face = fcc.class_colour(cls) if cls else (hc_colour(fluid) if fluid else "#B8BEC4")
+        sig_z = float(getattr(r, "depth_sigma_m", np.nan))                                   # the survey's vertical uncertainty of the test depth (empty where no survey states one: no bar, never a zero bar)
+        sig_p = float(getattr(r, "hydrostatic_sigma_bar", np.nan))
         for ax, fx in ((ax_a, xa), (ax_b, xb), (ax_c, xc)):
             ax.scatter([fx(r.reservoir_pressure_bar, r.tvdss_m)], [r.tvdss_m], s=44, color=face, edgecolor=theme.NORTH_SEA, linewidth=0.8, zorder=6)
+            if np.isfinite(sig_z) and sig_z > 0:
+                ax.errorbar([fx(r.reservoir_pressure_bar, r.tvdss_m)], [r.tvdss_m], yerr=[sig_z], xerr=[sig_p] if (ax is ax_c and np.isfinite(sig_p)) else None, fmt="none", ecolor=theme.NORTH_SEA, elinewidth=0.9, capsize=2, zorder=5)
+                if ax is ax_a:
+                    n_bars += 1
         ax_a.annotate(f"{r.test_number}", (r.reservoir_pressure_bar, r.tvdss_m), xytext=(5, -3), textcoords="offset points", fontsize=8.5, color=theme.NORTH_SEA)
         if pd.notna(r.aquifer_pressure_bar) and str(r.buoyancy_status).startswith("corrected") and fluid:
             n_corr += 1
@@ -319,8 +326,9 @@ def plot_triplet(axes, well_id: int, well_name: str, pressure: pd.DataFrame, con
     sg_rt = pu.emw_sg(gw * zmax, zmax, rt, "RT")
     note = (f"hydrostatic {gw:.4f} bar/m = {gw / pu.BAR_PER_M_PER_SG:.3f} sg (MSL basis; {float(sg_rt):.3f} sg on the RT basis at {zmax:.0f} m); RT {rt:.0f} m above MSL; "
             "grey fan: lines of constant sg (RT basis)"
-            + (f"; {n_multi} gradients do not line up: probably more than one pressure regime, so they are dashed (the deepest is assumed to connect to the contact; same sandstone package or shales between is not known)" if n_multi else ""))                     # shown under the figure title, not over the data
-    return {"tests": int(len(t)), "corrected": n_corr, "contacts": int(len(c)), "lot": int(len(lp)), "mud_points": int(len(mp)), "rt_elev_m": rt, "note": note}
+            + (f"; {n_multi} gradients do not line up: probably more than one pressure regime, so they are dashed (the deepest is assumed to connect to the contact; same sandstone package or shales between is not known)" if n_multi else "")
+            + (f"; {n_bars} test{'s' if n_bars != 1 else ''} with a bar: the survey's own vertical uncertainty of the depth (the gauge accuracy is not stated, so the bar is not the whole uncertainty); no bar = no stated uncertainty, not zero" if n_bars else ""))                     # shown under the figure title, not over the data
+    return {"tests": int(len(t)), "corrected": n_corr, "contacts": int(len(c)), "lot": int(len(lp)), "mud_points": int(len(mp)), "depth_bars": n_bars, "rt_elev_m": rt, "note": note}
 
 
 def triplet_figures(wells: list[tuple[int, str]], pressure: pd.DataFrame, contacts: pd.DataFrame, lot: pd.DataFrame, mud: pd.DataFrame | None, header: pd.DataFrame, cfg: dict[str, Any],
