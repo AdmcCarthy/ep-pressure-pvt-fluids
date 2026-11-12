@@ -44,8 +44,8 @@ def load_config() -> dict[str, Any]:
 # Depth reference
 # --------------------------------------------------------------------------- #
 def tvd_from_lookup(wellbore_ids: pd.Series, md: pd.Series, lookup: pd.DataFrame) -> pd.Series:
-    """TVD [m RT] at the given MD from survey stations or manual points (wellbore_id, md_m, tvd_m): linear interpolation inside the points of a well,
-    NaN outside them or with fewer than two points.  Never extrapolated."""
+    """TVD [m RT] at the given MD from MANUAL points (wellbore_id, md_m, tvd_m): linear interpolation inside the points of a well, NaN outside them or with fewer than two points.  Never extrapolated.
+    Survey depths are not converted here: the host fills the canonical TVD columns from the selected survey (minimum-curvature arc) and this module reads them (docs/md_to_tvd.md)."""
     out = pd.Series(np.nan, index=md.index, dtype="float64")
     if lookup is None or lookup.empty or not {"wellbore_id", "md_m", "tvd_m"} <= set(lookup.columns):
         return out
@@ -179,9 +179,9 @@ def build_well_dst_pressure(dst: pd.DataFrame, header: pd.DataFrame, cfg: dict[s
                             extra_points: pd.DataFrame | None = None, detail: pd.DataFrame | None = None) -> tuple[pd.DataFrame, list[dict]]:
     """One row per drill stem test (and per manual formation-pressure point) with the reservoir pressure, depth basis, overpressure, regime and HPHT class."""
     ctx = ("all", "well_dst_pressure")
-    columns = ["wellbore_id", "well_name", "test_number", "pressure_source", "top_md_m", "base_md_m", "mid_md_m", "depth_used_m", "depth_basis", "depth_confidence", "tvdss_m",
+    columns = ["wellbore_id", "well_name", "test_number", "pressure_source", "top_md_m", "base_md_m", "mid_md_m", "depth_used_m", "depth_basis", "depth_confidence", "depth_sigma_m", "tvdss_m",
                "reservoir_pressure_bar", "reservoir_pressure_basis", "pressure_confidence", "shut_in_bar", "shut_in_basis", "shut_in_basis_evidence", "shut_in_to_bhp_ratio",
-               "flow_pressure_bar", "bottom_hole_pressure_bar", "hydrostatic_bar", "overpressure_bar", "pressure_ratio", "pore_emw_sg", "pressure_regime", "overpressure_is_minimum",
+               "flow_pressure_bar", "bottom_hole_pressure_bar", "hydrostatic_bar", "hydrostatic_sigma_bar", "overpressure_bar", "pressure_ratio", "pore_emw_sg", "pressure_regime", "overpressure_is_minimum",
                "temperature_c", "temperature_source", "geothermal_gradient_c_km", "pressure_class", "temperature_class", "hpht_class", "hp_ht_pattern", "fluid_hint", "rt_assumed", "pressure_screen", "rejected_pressure_bar", "area", "flow_basis", "siwhp_bar", "sibhp_bar", "fwhp_bar", "fbhp_bar", "bhp_kind", "static_bhp_confirmed",
                "pressure_definition_source", "underpressure_suspect_outside_area", "underpressure_unconfirmed_static", "flags"]
     if dst.empty:
@@ -212,11 +212,18 @@ def build_well_dst_pressure(dst: pd.DataFrame, header: pd.DataFrame, cfg: dict[s
             if column in d.columns:
                 got = pd.Series(d[column].reindex(keys).to_numpy(), index=t.index)
                 t[column + "_manual"] = got.where(official, t[column + "_manual"])
-    tvd = tvd_from_lookup(t["wellbore_id"], t["mid_md_m"], tvd_lookup if tvd_lookup is not None else pd.DataFrame())
-    have_tvd = tvd.notna()
-    t["depth_used_m"] = tvd.where(have_tvd, t["mid_md_m"].astype("float64"))
-    t["depth_basis"] = np.where(have_tvd, "tvd_survey", t["base_depth_basis"].fillna("md_no_tvd"))
-    t["depth_confidence"] = t["depth_basis"].map({"tvd_survey": "high", "md_near_vertical": "medium", "md_deviated": "low", "md_no_tvd": "low"})
+    # The TVD of a test is read from the canonical table (`tvd_mid_m`, filled from the selected survey by the shared MD-to-TVD step, docs/md_to_tvd.md, with its `tvd_source` and `tvd_sigma_m`); this
+    # function converts no survey depth itself.  `tvd_lookup` holds MANUAL points only (no angles, linear), used for rows the canonical table could not place.
+    canonical_tvd = pd.to_numeric(t["tvd_mid_m"], errors="coerce").astype("float64") if "tvd_mid_m" in t else pd.Series(np.nan, index=t.index, dtype="float64")
+    if "tvd_source" in t:
+        canonical_tvd = canonical_tvd.where(t["tvd_source"].astype("string").isin(["survey", "reported"]))
+    manual_tvd = tvd_from_lookup(t["wellbore_id"], t["mid_md_m"], tvd_lookup if tvd_lookup is not None else pd.DataFrame())
+    from_canonical, from_manual = canonical_tvd.notna(), canonical_tvd.isna() & manual_tvd.notna()
+    tvd = canonical_tvd.where(from_canonical, manual_tvd)
+    t["depth_used_m"] = tvd.where(tvd.notna(), t["mid_md_m"].astype("float64"))
+    t["depth_basis"] = np.where(from_canonical, "tvd_survey", np.where(from_manual, "tvd_manual", t["base_depth_basis"].fillna("md_no_tvd")))
+    t["depth_confidence"] = t["depth_basis"].map({"tvd_survey": "high", "tvd_manual": "high", "md_near_vertical": "medium", "md_deviated": "low", "md_no_tvd": "low"})
+    t["depth_sigma_m"] = pd.to_numeric(t["tvd_sigma_m"], errors="coerce").astype("float64").where(from_canonical) if "tvd_sigma_m" in t else np.nan          # the survey's own vertical uncertainty at the test
     t["tvdss_m"] = t["depth_used_m"] - t["rt_elev_m"]
     t["bhp"] = pd.to_numeric(t["bottom_hole_pressure_bar"], errors="coerce").astype("float64")
     shut = pd.to_numeric(t["shut_in_bar"], errors="coerce").astype("float64")
@@ -249,6 +256,7 @@ def build_well_dst_pressure(dst: pd.DataFrame, header: pd.DataFrame, cfg: dict[s
     g = float(cfg["hydrostatic"]["gradient_bar_per_m"])
     sg = float(cfg["hydrostatic"]["bar_per_m_per_sg"])
     t["hydrostatic_bar"] = g * t["tvdss_m"]
+    t["hydrostatic_sigma_bar"] = g * t["depth_sigma_m"]                      # the hydrostatic pressure moves by the gradient times the vertical uncertainty of the depth (empty where the survey states none)
     # screen: a static reservoir pressure far below hydrostatic is a wellhead or flowing value, one far above is a typing / unit error (kept, flagged, not used)
     screen_cfg = cfg["screen"]
     candidate_ratio = reservoir / t["hydrostatic_bar"]
@@ -329,7 +337,12 @@ def well_contacts_tvdss(facts: pd.DataFrame, header: pd.DataFrame, lookup: pd.Da
     unit = c["unit"].astype("string").str.upper().fillna("")
     md = pd.to_numeric(c["depth_top_m"], errors="coerce")
     refc = c["depth_reference"].astype("string").str.upper().fillna("")
-    tvd_lookup = tvd_from_lookup(c["wellbore_id"], md, lookup if lookup is not None else pd.DataFrame())
+    tvd_lookup = tvd_from_lookup(c["wellbore_id"], md, lookup if lookup is not None else pd.DataFrame())               # manual points only
+    if "depth_top_tvd_m" in c:                                                                                         # the canonical TVD of the depth (shared MD-to-TVD step) outranks a manual point
+        canonical = pd.to_numeric(c["depth_top_tvd_m"], errors="coerce").astype("float64")
+        if "depth_tvd_source" in c:
+            canonical = canonical.where(c["depth_tvd_source"].astype("string").eq("survey"))
+        tvd_lookup = canonical.where(canonical.notna(), tvd_lookup)
     tvdss = pd.Series(np.nan, index=c.index, dtype="float64")
     basis = pd.Series("", index=c.index, dtype="object")
     for mask, vals, text in (
@@ -337,7 +350,7 @@ def well_contacts_tvdss(facts: pd.DataFrame, header: pd.DataFrame, lookup: pd.Da
             (value.notna() & unit.eq("M TVD") & c["rt_elev_m"].notna(), value - c["rt_elev_m"], "stated TVD (read as below RT)"),
             (md.notna() & refc.eq("MSL"), md, "stated depth below MSL"),
             (md.notna() & refc.str.startswith("TVD") & c["rt_elev_m"].notna(), md - c["rt_elev_m"], "stated TVD (read as below RT)"),
-            (md.notna() & tvd_lookup.notna() & c["rt_elev_m"].notna(), tvd_lookup - c["rt_elev_m"], "MD converted with a survey / manual point"),
+            (md.notna() & tvd_lookup.notna() & c["rt_elev_m"].notna(), tvd_lookup - c["rt_elev_m"], "MD converted with the survey / a manual point"),
             (md.notna() & c["base_depth_basis"].eq("md_near_vertical") & c["rt_elev_m"].notna(), md - c["rt_elev_m"], "MD of a near-vertical well")):
         free = tvdss.isna() & mask
         tvdss[free], basis[free] = vals[free], text
